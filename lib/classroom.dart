@@ -5,6 +5,7 @@ import './myprofile.dart';
 import './assignment.dart';
 import './login.dart';
 import './lecture.dart';
+import './announcement.dart';
 
 class Classroom extends StatefulWidget {
  @override
@@ -82,7 +83,10 @@ class _MainDrawerState extends State<MainDrawer> {
             leading: Icon(Icons.alarm),
             title: Text('Announcements'),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.of(context).pop();
+              Navigator.push(context,
+                MaterialPageRoute(builder: (context) => Announcement()),
+              );
             },
           ),
           ListTile(
