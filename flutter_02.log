@@ -1,0 +1,83 @@
+Flutter crash report; please file at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter run
+
+## exception
+
+RangeError: RangeError (index): Invalid value: Valid value range is empty: 0
+
+```
+#0      List.[] (dart:core/runtime/libgrowable_array.dart:142:60)
+#1      List.removeAt (dart:core/runtime/libgrowable_array.dart:28:22)
+#2      PackageMap.uriForPackage (package:flutter_tools/src/dart/package_map.dart:51:45)
+#3      DartDependencySetBuilder.build (package:flutter_tools/src/dart/dependencies.dart:78:49)
+#4      HotRunner._refreshDartDependencies (package:flutter_tools/src/run_hot.dart:111:73)
+<asynchronous suspension>
+#5      HotRunner.run (package:flutter_tools/src/run_hot.dart:253:16)
+<asynchronous suspension>
+#6      RunCommand.runCommand (package:flutter_tools/src/commands/run.dart:391:37)
+<asynchronous suspension>
+#7      FlutterCommand.verifyThenRunCommand (package:flutter_tools/src/runner/flutter_command.dart:372:18)
+#8      _asyncThenWrapperHelper.<anonymous closure> (dart:async/runtime/libasync_patch.dart:77:64)
+#9      _rootRunUnary (dart:async/zone.dart:1132:38)
+#10     _CustomZone.runUnary (dart:async/zone.dart:1029:19)
+#11     _FutureListener.handleValue (dart:async/future_impl.dart:129:18)
+#12     Future._propagateToListeners.handleValueCallback (dart:async/future_impl.dart:642:45)
+#13     Future._propagateToListeners (dart:async/future_impl.dart:671:32)
+#14     Future._complete (dart:async/future_impl.dart:476:7)
+#15     _SyncCompleter.complete (dart:async/future_impl.dart:51:12)
+#16     _AsyncAwaitCompleter.complete (dart:async/runtime/libasync_patch.dart:28:18)
+#17     _completeOnAsyncReturn (dart:async/runtime/libasync_patch.dart:295:13)
+#18     RunCommand.usageValues (package:flutter_tools/src/commands/run.dart)
+#19     _asyncThenWrapperHelper.<anonymous closure> (dart:async/runtime/libasync_patch.dart:77:64)
+#20     _rootRunUnary (dart:async/zone.dart:1132:38)
+#21     _CustomZone.runUnary (dart:async/zone.dart:1029:19)
+#22     _FutureListener.handleValue (dart:async/future_impl.dart:129:18)
+#23     Future._propagateToListeners.handleValueCallback (dart:async/future_impl.dart:642:45)
+#24     Future._propagateToListeners (dart:async/future_impl.dart:671:32)
+#25     Future._complete (dart:async/future_impl.dart:476:7)
+#26     _SyncCompleter.complete (dart:async/future_impl.dart:51:12)
+#27     _AsyncAwaitCompleter.complete.<anonymous closure> (dart:async/runtime/libasync_patch.dart:33:20)
+#28     _rootRun (dart:async/zone.dart:1124:13)
+#29     _CustomZone.run (dart:async/zone.dart:1021:19)
+#30     _CustomZone.bindCallback.<anonymous closure> (dart:async/zone.dart:947:23)
+#31     _microtaskLoop (dart:async/schedule_microtask.dart:41:21)
+#32     _startMicrotaskLoop (dart:async/schedule_microtask.dart:50:5)
+#33     _runPendingImmediateCallback (dart:isolate/runtime/libisolate_patch.dart:115:13)
+#34     _RawReceivePortImpl._handleMessage (dart:isolate/runtime/libisolate_patch.dart:172:5)
+```
+
+## flutter doctor
+
+```
+[✓] Flutter (Channel beta, v0.8.2, on Microsoft Windows [Version 10.0.17134.285], locale en-IN)
+    • Flutter version 0.8.2 at C:\Users\Sanyem Gupta\Downloads\Jeet\test\Flutter_windows\flutter
+    • Framework revision 5ab9e70727 (2 weeks ago), 2018-09-07 12:33:05 -0700
+    • Engine revision 58a1894a1c
+    • Dart version 2.1.0-dev.3.1.flutter-760a9690c2
+
+[✓] Android toolchain - develop for Android devices (Android SDK 28.0.2)
+    • Android SDK at C:\Users\Sanyem Gupta\AppData\Local\Android\sdk
+    • Android NDK location not configured (optional; useful for native profiling support)
+    • Platform android-28, build-tools 28.0.2
+    • Java binary at: C:\Program Files\Android\Android Studio\jre\bin\java
+    • Java version OpenJDK Runtime Environment (build 1.8.0_152-release-1024-b02)
+    • All Android licenses accepted.
+
+[✓] Android Studio (version 3.1)
+    • Android Studio at C:\Program Files\Android\Android Studio
+    • Flutter plugin version 28.0.1
+    • Dart plugin version 173.4700
+    • Java version OpenJDK Runtime Environment (build 1.8.0_152-release-1024-b02)
+
+[✓] VS Code, 64-bit edition (version 1.27.2)
+    • VS Code at C:\Program Files\Microsoft VS Code
+    • Flutter extension version 2.18.0
+
+[✓] Connected devices (1 available)
+    • Nokia 6 1 Plus • DRGID18081905780 • android-arm64 • Android 8.1.0 (API 27)
+
+• No issues found!
+```
