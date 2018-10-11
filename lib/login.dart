@@ -1,20 +1,31 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 import './dashboard.dart';
 
+Future<http.Response> fetchData(username, password) async {
+  Map data = {
+    'csrfmiddlewaretoken': 'ElQ9KkGKYX9s5MXyJvpYMKtr4ISKa3XhFDCqm4U7zr32VeqiFlVJUzyDqzI0EHu0',
+    'username': username,
+    'password': password
+  };
+  final url = 'http://httpbin.org/post';
+  dynamic response = await http.post(url, body: data);
+  return response;
+}
+
 class Login extends StatefulWidget {
+  Login({Key key}) : super(key: key);
   @override
   _LoginState createState() => _LoginState();
 }
 
-class _LoginData {
-  String email = '';
-  String password = '';
-}
-
 class _LoginState extends State<Login> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,6 +52,7 @@ class _LoginState extends State<Login> {
                     child: Column(
                       children: <Widget>[
                         TextFormField(
+                          controller: usernameController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             hintText: 'you@example.com',
@@ -53,6 +65,7 @@ class _LoginState extends State<Login> {
                           }
                         ),
                         TextFormField(
+                          controller: passwordController,
                           obscureText: true,
                           decoration: InputDecoration(
                             hintText: 'Password',
@@ -70,10 +83,16 @@ class _LoginState extends State<Login> {
                             // color: Colors.blue,
                             onPressed: () {
                               if (_formKey.currentState.validate()) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => Dashboard()),
-                                );
+                                dynamic response = fetchData(usernameController.text, passwordController.text);
+                                response.then((data) {
+                                  if (data.statusCode == 200){
+                                    print(data.statusCode);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => Dashboard()),
+                                    );
+                                  }
+                                });
                               }
                             },
                             child: Text('Log In'),

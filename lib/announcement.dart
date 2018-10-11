@@ -7,7 +7,7 @@ class Announcement extends StatefulWidget {
   _AnnouncementState createState() => _AnnouncementState();
 }
 
-List<Widget> ListofAnnouncement(screenWidth, buttonPosition) {
+List<Widget> listofannouncement(screenWidth, buttonPosition) {
   List<Widget> announcements = List();
   for(var i=0;i<=5;i++){
     announcements.add(
@@ -52,7 +52,7 @@ class _AnnouncementState extends State<Announcement> {
       drawer: MainDrawer(),
       body: SingleChildScrollView(
         child: Column(
-          children: ListofAnnouncement(screenWidth, buttonPosition),
+          children: listofannouncement(screenWidth, buttonPosition),
         ),
       ),
     );

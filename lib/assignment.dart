@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import './dashboard.dart';
 import './classroom.dart';
 
 class Assignment extends StatefulWidget {
@@ -8,7 +7,7 @@ class Assignment extends StatefulWidget {
   _AssignmentState createState() => _AssignmentState();
 }
 
-List<Widget> ListofAssignment(screenWidth, buttonPosition) {
+List<Widget> listofassignment(screenWidth, buttonPosition) {
   List<Widget> assignments = List();
   for(var i=0;i<=5;i++){
     assignments.add(
@@ -58,7 +57,7 @@ class _AssignmentState extends State<Assignment> {
       drawer: MainDrawer(),
       body: SingleChildScrollView(
         child: Column(
-          children: ListofAssignment(screenWidth, buttonPosition),
+          children: listofassignment(screenWidth, buttonPosition),
         )
       )
     );

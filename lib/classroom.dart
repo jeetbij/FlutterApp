@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import './dashboard.dart';
-import './myprofile.dart';
 import './assignment.dart';
 import './login.dart';
 import './lecture.dart';

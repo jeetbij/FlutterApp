@@ -7,7 +7,7 @@ class Lecture extends StatefulWidget {
   _LectureState createState() => _LectureState();
 }
 
-List<Widget> ListofLecture(screenWidth, buttonPosition) {
+List<Widget> listoflecture(screenWidth, buttonPosition) {
   List<Widget> lectures = List();
   for(var i=0;i<=5;i++){
     lectures.add(
@@ -62,7 +62,7 @@ class _LectureState extends State<Lecture> {
       drawer: MainDrawer(),
       body: SingleChildScrollView(
         child: Column(
-          children: ListofLecture(screenWidth, buttonPosition),
+          children: listoflecture(screenWidth, buttonPosition),
         ),
       ),
     );
