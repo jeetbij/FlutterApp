@@ -53,7 +53,7 @@ Widget classroomdetails() {
                     SizedBox(
                       width: 200.0,
                       height: 140.0,
-                      child: Image.asset('assets/index.jpg'),
+                      child: Image.network("http://jeet007.pythonanywhere.com"+(classroom.image).toString()),
                     ),
                     Container(
                       padding: EdgeInsets.only(bottom:5.0),
@@ -91,7 +91,7 @@ Widget classroomdetails() {
 }
 
 class ClassroomDetail {
-  String id, name, username, created_at;
+  String id, name, username, created_at, image;
   bool is_active;
 
   ClassroomDetail({
@@ -99,7 +99,8 @@ class ClassroomDetail {
     this.name,
     this.username,
     this.created_at,
-    this.is_active
+    this.is_active,
+    this.image
   });
 
   factory ClassroomDetail.fromJson(Map<String, dynamic> parsedJson){
@@ -108,7 +109,8 @@ class ClassroomDetail {
       name : parsedJson['name'].toString(),
       username : parsedJson ['username'].toString(),
       created_at: parsedJson['created_at'].toString(),
-      is_active: parsedJson['is_active']
+      is_active: parsedJson['is_active'],
+      image: parsedJson['image']
     );
   }
 }

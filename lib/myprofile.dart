@@ -27,14 +27,15 @@ Future<User> userProfile() async {
 }
 
 class User{
-  String username,firstName, lastName, email, mobileNo;
+  String username,firstName, lastName, email, mobileNo, avatar;
 
   User({
     this.username,
     this.firstName,
     this.lastName,
     this.email,
-    this.mobileNo
+    this.mobileNo,
+    this.avatar
   });
 
   factory User.fromJson(Map<String, dynamic> parsedJson){
@@ -43,7 +44,8 @@ class User{
       firstName : parsedJson['first_name'],
       lastName : parsedJson ['last_name'],
       email: parsedJson['email'],
-      mobileNo: parsedJson['mobile_no']
+      mobileNo: parsedJson['mobile_no'],
+      avatar: parsedJson['avatar']
     );
   }
 }
@@ -124,7 +126,7 @@ class _MyProfileState extends State<MyProfile> {
                       child: SizedBox(
                         width: 200.0,
                         height: 200.0,
-                        child: Image.asset('assets/pied-piper02.png'),
+                        child: Image.network("http://jeet007.pythonanywhere.com"+(user.avatar).toString()),
                       ),
                     ),
                     Container(
