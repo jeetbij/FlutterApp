@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import './classroom.dart';
 
 class Assignment extends StatefulWidget {
+  Assignment({Key key}) : super(key: key);
   @override
   _AssignmentState createState() => _AssignmentState();
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import './classroom.dart';
 
 class Announcement extends StatefulWidget {
+  Announcement({Key key}) : super(key: key);
   @override
   _AnnouncementState createState() => _AnnouncementState();
 }

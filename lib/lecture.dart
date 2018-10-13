@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'classroom.dart';
 
 class Lecture extends StatefulWidget {
+  Lecture({Key key}) : super(key: key);
   @override
   _LectureState createState() => _LectureState();
 }

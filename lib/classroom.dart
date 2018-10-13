@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import './dashboard.dart';
 import './assignment.dart';
-import './login.dart';
 import './lecture.dart';
 import './announcement.dart';
 
 class Classroom extends StatefulWidget {
+  Classroom({Key key}) : super(key: key);
  @override
  _ClassroomState createState() => _ClassroomState();
 }
@@ -129,22 +129,19 @@ class _MainDrawerState extends State<MainDrawer> {
               );
             },
           ),
-          ListTile(
-            leading: Icon(Icons.assignment_turned_in),
-            title: Text('Submissions'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
+          // ListTile(
+          //   leading: Icon(Icons.assignment_turned_in),
+          //   title: Text('Submissions'),
+          //   onTap: () {
+          //     Navigator.pop(context);
+          //   },
+          // ),
           Divider(),
           ListTile(
             leading: Icon(Icons.power_settings_new),
             title: Text('LogOut'),
             onTap: () {
-              Navigator.of(context).pop();
-              Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => Login()),
-              );
+              Navigator.popUntil(context, ModalRoute.withName('/login'));
             },
           ), 
         ],

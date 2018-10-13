@@ -6,11 +6,10 @@ import './dashboard.dart';
 
 Future<http.Response> fetchData(username, password) async {
   Map data = {
-    'csrfmiddlewaretoken': 'ElQ9KkGKYX9s5MXyJvpYMKtr4ISKa3XhFDCqm4U7zr32VeqiFlVJUzyDqzI0EHu0',
     'username': username,
     'password': password
   };
-  final url = 'http://httpbin.org/post';
+  final url = 'http://jeet007.pythonanywhere.com//api-token-auth/';
   dynamic response = await http.post(url, body: data);
   return response;
 }
@@ -85,6 +84,7 @@ class _LoginState extends State<Login> {
                               if (_formKey.currentState.validate()) {
                                 dynamic response = fetchData(usernameController.text, passwordController.text);
                                 response.then((data) {
+                                  print(data.data);
                                   if (data.statusCode == 200){
                                     print(data.statusCode);
                                     Navigator.push(

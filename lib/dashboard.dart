@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import './login.dart';
 import './classroom.dart';
 import './myprofile.dart';
 
 class Dashboard extends StatefulWidget {
+  Dashboard({Key key}) : super(key: key);
   @override
   _DashboardState createState() => _DashboardState();
 }
@@ -49,10 +49,6 @@ class _DashboardState extends State<Dashboard> {
                         child: Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                         onTap: () {
                           Navigator.of(context).pop();
-                          setState(() {
-                            appTitle = "Dashboard";
-                            widgetForBody = DashboardContent();
-                          });
                         },
                       ),
                     ),
@@ -66,10 +62,9 @@ class _DashboardState extends State<Dashboard> {
               title: Text('My Profile'),
               onTap: () {
                 Navigator.of(context).pop();
-                setState(() {
-                  appTitle = "Profile";
-                  widgetForBody = MyProfile();
-                });
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => MyProfile()),
+                );
               },
             ),
             ListTile(
@@ -82,10 +77,7 @@ class _DashboardState extends State<Dashboard> {
               leading: Icon(Icons.power_settings_new),
               title: Text('LogOut'),
               onTap: () {
-                Navigator.of(context).pop();
-                Navigator.push(context, 
-                  MaterialPageRoute(builder: (context) => Login()),
-                );
+                Navigator.popUntil(context, ModalRoute.withName('/login'));
               },
             ),
           ],
@@ -178,14 +170,6 @@ class _DashboardContentState extends State<DashboardContent> {
         ),
       ),
       
-    );
-  }
-
-  //Join Classroom
-  _showDialog() async {
-    await showDialog<String>(
-      context: context,
-      child: JoinClassroom(),
     );
   }
 }
