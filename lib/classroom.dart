@@ -6,7 +6,8 @@ import './lecture.dart';
 import './announcement.dart';
 
 class Classroom extends StatefulWidget {
-  Classroom({Key key}) : super(key: key);
+  final String classroomId;
+  Classroom({Key key, this.classroomId}) : super(key: key);
  @override
  _ClassroomState createState() => _ClassroomState();
 }
@@ -28,7 +29,7 @@ class _ClassroomState extends State<Classroom> {
       drawer: MainDrawer(),
       body: SingleChildScrollView(
         child: Container(
-          child: Text('Classroom', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+          child: Text('Classroom Id : ' +"${widget.classroomId}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
         ),
       ),
     );

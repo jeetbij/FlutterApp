@@ -1,17 +1,20 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './dashboard.dart';
 
-Future<http.Response> fetchData(username, password) async {
+Future<Map> fetchData(username, password) async {
   Map data = {
     'username': username,
     'password': password
   };
-  final url = 'http://jeet007.pythonanywhere.com//api-token-auth/';
+  final url = 'http://jeet007.pythonanywhere.com/api-token-auth/';
   dynamic response = await http.post(url, body: data);
-  return response;
+  Map res = json.decode(response.body);
+  return res;
 }
 
 class Login extends StatefulWidget {
@@ -84,14 +87,13 @@ class _LoginState extends State<Login> {
                               if (_formKey.currentState.validate()) {
                                 dynamic response = fetchData(usernameController.text, passwordController.text);
                                 response.then((data) {
-                                  print(data.data);
-                                  if (data.statusCode == 200){
-                                    print(data.statusCode);
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => Dashboard()),
-                                    );
-                                  }
+                                  SharedPreferences.getInstance().then((SharedPreferences sp) {
+                                    sp.setString('login_token', data['token'].toString());
+                                  });
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => Dashboard()),
+                                  );
                                 });
                               }
                             },

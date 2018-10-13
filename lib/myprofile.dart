@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './dashboard.dart';
 
@@ -9,6 +13,40 @@ class MyProfile extends StatefulWidget {
   _MyProfileState createState() => _MyProfileState();
 }
 
+Future<User> userProfile() async {
+  final url = "http://jeet007.pythonanywhere.com/userauth/user/?username=itsadmin";
+  String token;
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  token = sp.getString('login_token');
+  dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
+  if (response.statusCode == 200){
+    return User.fromJson(json.decode(response.body));
+  }else{
+    throw Exception("Failed to load data.");
+  }
+}
+
+class User{
+  String username,firstName, lastName, email, mobileNo;
+
+  User({
+    this.username,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.mobileNo
+  });
+
+  factory User.fromJson(Map<String, dynamic> parsedJson){
+    return User(
+      username: parsedJson['username'],
+      firstName : parsedJson['first_name'],
+      lastName : parsedJson ['last_name'],
+      email: parsedJson['email'],
+      mobileNo: parsedJson['mobile_no']
+    );
+  }
+}
 
 class _MyProfileState extends State<MyProfile> {
   @override
@@ -74,70 +112,82 @@ class _MyProfileState extends State<MyProfile> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(left: 100.0, right: 100.0),
-                child: SizedBox(
-                  width: 200.0,
-                  height: 200.0,
-                  child: Image.asset('assets/pied-piper02.png'),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(left:40.0, right:40.0, top:40.0),
-                child: Column(
+          child: FutureBuilder<User>(
+            future: userProfile(),
+            builder: (context, snapshot) {
+              if(snapshot.hasData){
+                dynamic user = snapshot.data;
+                return Column(
                   children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text("Username", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        Text("Jeet"),
-                      ]
+                    Padding(
+                      padding: const EdgeInsets.only(left: 100.0, right: 100.0),
+                      child: SizedBox(
+                        width: 200.0,
+                        height: 200.0,
+                        child: Image.asset('assets/pied-piper02.png'),
+                      ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text("First Name", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        Text("Chandrajeet"),
-                      ]
+                    Container(
+                      padding: const EdgeInsets.only(left:40.0, right:40.0, top:40.0),
+                      child: Column(
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text("Username", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text(user.username),
+                            ]
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text("First Name", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text(user.firstName),
+                            ]
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text("Last Name", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text(user.lastName),
+                            ]
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text("Email", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text(user.email),
+                            ]
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Text("Mobile No", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text(user.mobileNo),
+                            ]
+                          ),
+                        ],
+                      ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text("Last Name", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        Text("Choudhary"),
-                      ]
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text("Email", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        Text("chandrajeet.c16@iiits.in"),
-                      ]
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text("Password", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        Text("*********"),
-                      ]
-                    ),
+                    Container(
+                      padding: const EdgeInsets.only(top:100.0),
+                      child: RaisedButton(
+                        child: Text("Log Out"),
+                        onPressed: () {
+                          Navigator.popUntil(context, ModalRoute.withName('/login'));
+                        }
+                      )
+                    )
+                    // Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                   ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.only(top:100.0),
-                child: RaisedButton(
-                  child: Text("Log Out"),
-                  onPressed: () {
-                    Navigator.popUntil(context, ModalRoute.withName('/login'));
-                  }
-                )
-              )
-              // Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-            ],
-          ),
+                );
+              }else{
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+            },
+          )
         ),
       ),
     );

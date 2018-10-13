@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './classroom.dart';
 import './myprofile.dart';
@@ -9,6 +13,105 @@ class Dashboard extends StatefulWidget {
   _DashboardState createState() => _DashboardState();
 }
 
+Future<List<ClassroomDetail>> fetchClassroom() async {
+  final url = 'http://jeet007.pythonanywhere.com/classroom/';
+  String token;
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  token = sp.getString('login_token');
+  dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
+  if (response.statusCode == 200){
+    List responseJson = json.decode(response.body);
+    return responseJson.map((item) => ClassroomDetail.fromJson(item)).toList();
+  }else{
+    throw Exception('Failed to load data');
+  }
+}
+
+Widget classroomdetails() {
+  List <Widget> classrooms = List();
+
+  dynamic clls = FutureBuilder<List<ClassroomDetail>>(
+    future: fetchClassroom(),
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        List<ClassroomDetail> classroom_list = snapshot.data;
+        for (dynamic classroom in classroom_list){
+          classrooms.add(
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => Classroom(classroomId: classroom.id)),
+                  );
+              },
+              child: Card(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(top: 5.0),
+                      child: Text(classroom.name, style: TextStyle(fontWeight:FontWeight.bold)),
+                    ),
+                    SizedBox(
+                      width: 200.0,
+                      height: 140.0,
+                      child: Image.asset('assets/index.jpg'),
+                    ),
+                    Container(
+                      padding: EdgeInsets.only(bottom:5.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text("", style: TextStyle(fontSize: 10.0)),
+                          Text("", style: TextStyle(fontSize: 10.0)),
+                          Text("Taught By-", style: TextStyle(fontSize: 10.0)),
+                          Text(classroom.username, style: TextStyle(fontWeight: FontWeight.bold))
+                        ],
+                      )
+                    )
+                  ],
+                ),
+              )
+            )
+          );
+        }
+        return GridView.count(
+          primary: false,
+          padding: const EdgeInsets.all(10.0),
+          crossAxisSpacing: 10.0,
+          crossAxisCount: 2,
+          children: classrooms,
+        );
+      }else{
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      }
+    },
+  );
+  return clls;
+}
+
+class ClassroomDetail {
+  String id, name, username, created_at;
+  bool is_active;
+
+  ClassroomDetail({
+    this.id,
+    this.name,
+    this.username,
+    this.created_at,
+    this.is_active
+  });
+
+  factory ClassroomDetail.fromJson(Map<String, dynamic> parsedJson){
+    return ClassroomDetail(
+      id: parsedJson['id'].toString(),
+      name : parsedJson['name'].toString(),
+      username : parsedJson ['username'].toString(),
+      created_at: parsedJson['created_at'].toString(),
+      is_active: parsedJson['is_active']
+    );
+  }
+}
 
 class JoinClassroom extends StatefulWidget {
   @override
@@ -107,69 +210,7 @@ class _DashboardContentState extends State<DashboardContent> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child:Container(
-        child: GridView.count(
-          primary: false,
-          padding: const EdgeInsets.all(10.0),
-          crossAxisSpacing: 10.0,
-          crossAxisCount: 2,
-          children: <Widget>[
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Classroom()),
-                  );
-              },
-              child: Column(
-                children: <Widget>[
-                  SizedBox(
-                    width: 200.0,
-                    height: 150.0,
-                    child: Image.asset('assets/index.jpg'),
-                  ),
-                  Text("First Image"),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Classroom()),
-                  );
-              },
-              child: Column(
-                children: <Widget>[ 
-                  SizedBox(
-                    width: 200.0,
-                    height: 150.0,
-                    child: Image.asset('assets/book.jpg'),
-                  ),
-                  Text("Second Image"),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                print("pressed");
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Classroom()),
-                  );
-              },
-              child: Column(
-                children: <Widget>[ 
-                  SizedBox(
-                    width: 200.0,
-                    height: 150.0,
-                    child: Image.asset('assets/og_image.jpeg'),
-                  ),
-                  Text("Third Image"),
-                ],
-              ),
-            ),  
-          ],
-        ),
-      ),
-      
+      child: classroomdetails()
     );
   }
 }
