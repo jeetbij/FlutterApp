@@ -15,9 +15,8 @@ class MyProfile extends StatefulWidget {
 
 Future<User> userProfile() async {
   final url = "http://jeet007.pythonanywhere.com/userauth/user/?username=itsadmin";
-  String token;
   final SharedPreferences sp = await SharedPreferences.getInstance();
-  token = sp.getString('login_token');
+  String token = sp.getString('login_token');
   dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
   if (response.statusCode == 200){
     return User.fromJson(json.decode(response.body));
@@ -136,35 +135,35 @@ class _MyProfileState extends State<MyProfile> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Text("Username", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text("Username :", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                               Text(user.username),
                             ]
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Text("First Name", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text("First Name :", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                               Text(user.firstName),
                             ]
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Text("Last Name", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text("Last Name :", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                               Text(user.lastName),
                             ]
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Text("Email", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text("Email :", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                               Text(user.email),
                             ]
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Text("Mobile No", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              Text("Mobile No :", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                               Text(user.mobileNo),
                             ]
                           ),
@@ -176,7 +175,7 @@ class _MyProfileState extends State<MyProfile> {
                       child: RaisedButton(
                         child: Text("Log Out"),
                         onPressed: () {
-                          Navigator.popUntil(context, ModalRoute.withName('/login'));
+                          Navigator.of(context).pushNamed('/login');
                         }
                       )
                     )

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'globals.dart' as globals;
 
 import './dashboard.dart';
 
@@ -11,7 +12,7 @@ Future<Map> fetchData(username, password) async {
     'username': username,
     'password': password
   };
-  final url = 'http://jeet007.pythonanywhere.com/api-token-auth/';
+  final url = (globals.mainUrl).toString()+'/api-token-auth/';
   dynamic response = await http.post(url, body: data);
   Map res = json.decode(response.body);
   return res;
@@ -90,10 +91,13 @@ class _LoginState extends State<Login> {
                                   SharedPreferences.getInstance().then((SharedPreferences sp) {
                                     sp.setString('login_token', data['token'].toString());
                                   });
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => Dashboard()),
-                                  );
+                                  if(data['token'] != null) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => Dashboard()),
+                                    );
+                                  }
                                 });
                               }
                             },

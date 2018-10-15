@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'globals.dart' as globals;
 import './classroom.dart';
 import './myprofile.dart';
 
@@ -13,11 +14,16 @@ class Dashboard extends StatefulWidget {
   _DashboardState createState() => _DashboardState();
 }
 
-Future<List<ClassroomDetail>> fetchClassroom() async {
-  final url = 'http://jeet007.pythonanywhere.com/classroom/';
-  String token;
+Future<bool> _logout() async {
   final SharedPreferences sp = await SharedPreferences.getInstance();
-  token = sp.getString('login_token');
+  sp.setString('login_token', '');
+  return true;
+}
+
+Future<List<ClassroomDetail>> fetchClassroom() async {
+  final url = (globals.mainUrl).toString()+'/classroom/';
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
   dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
   if (response.statusCode == 200){
     List responseJson = json.decode(response.body);
@@ -48,22 +54,22 @@ Widget classroomdetails() {
                   children: <Widget>[
                     Container(
                       padding: EdgeInsets.only(top: 5.0),
-                      child: Text(classroom.name, style: TextStyle(fontWeight:FontWeight.bold)),
+                      child: Text(classroom.name, style: TextStyle(fontWeight:FontWeight.bold, fontSize: 14.0)),
                     ),
                     SizedBox(
                       width: 200.0,
                       height: 140.0,
-                      child: Image.network("http://jeet007.pythonanywhere.com"+(classroom.image).toString()),
+                      child: Image.network((globals.mainUrl).toString()+(classroom.image).toString()),
                     ),
                     Container(
-                      padding: EdgeInsets.only(bottom:5.0),
+                      padding: EdgeInsets.only(bottom:5.0, right:10.0, left:5.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text("", style: TextStyle(fontSize: 10.0)),
                           Text("", style: TextStyle(fontSize: 10.0)),
-                          Text("Taught By-", style: TextStyle(fontSize: 10.0)),
-                          Text(classroom.username, style: TextStyle(fontWeight: FontWeight.bold))
+                          Text("Taught By-", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 10.0)),
+                          Text(classroom.username, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0))
                         ],
                       )
                     )
@@ -79,6 +85,10 @@ Widget classroomdetails() {
           crossAxisSpacing: 10.0,
           crossAxisCount: 2,
           children: classrooms,
+        );
+      }else if(snapshot.hasError){
+        return Center(
+          child: Text('Error: ${snapshot.error}'),
         );
       }else{
         return Center(
@@ -182,7 +192,8 @@ class _DashboardState extends State<Dashboard> {
               leading: Icon(Icons.power_settings_new),
               title: Text('LogOut'),
               onTap: () {
-                Navigator.popUntil(context, ModalRoute.withName('/login'));
+                _logout();
+                Navigator.of(context).pushNamed('/login');
               },
             ),
           ],
