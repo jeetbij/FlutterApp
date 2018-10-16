@@ -9,7 +9,8 @@ import './classroom.dart';
 import './myprofile.dart';
 
 class Dashboard extends StatefulWidget {
-  Dashboard({Key key}) : super(key: key);
+  final String userName;
+  Dashboard({Key key, this.userName}) : super(key: key);
   @override
   _DashboardState createState() => _DashboardState();
 }
@@ -20,14 +21,14 @@ Future<bool> _logout() async {
   return true;
 }
 
-Future<List<ClassroomDetail>> fetchClassroom() async {
+Future<dynamic> fetchClassroom() async {
   final url = (globals.mainUrl).toString()+'/classroom/';
   final SharedPreferences sp = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
   dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
   if (response.statusCode == 200){
-    List responseJson = json.decode(response.body);
-    return responseJson.map((item) => ClassroomDetail.fromJson(item)).toList();
+    dynamic responseJson = json.decode(response.body);
+    return responseJson;
   }else{
     throw Exception('Failed to load data');
   }
@@ -36,17 +37,17 @@ Future<List<ClassroomDetail>> fetchClassroom() async {
 Widget classroomdetails() {
   List <Widget> classrooms = List();
 
-  dynamic clls = FutureBuilder<List<ClassroomDetail>>(
+  dynamic clls = FutureBuilder<dynamic>(
     future: fetchClassroom(),
     builder: (context, snapshot) {
       if (snapshot.hasData) {
-        List<ClassroomDetail> classroom_list = snapshot.data;
+        dynamic classroom_list = snapshot.data['student'];
         for (dynamic classroom in classroom_list){
           classrooms.add(
             GestureDetector(
               onTap: () {
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => Classroom(classroomId: classroom.id)),
+                  MaterialPageRoute(builder: (context) => Classroom(classroomId: classroom['id'].toString())),
                   );
               },
               child: Card(
@@ -54,25 +55,32 @@ Widget classroomdetails() {
                   children: <Widget>[
                     Container(
                       padding: EdgeInsets.only(top: 5.0),
-                      child: Text(classroom.name, style: TextStyle(fontWeight:FontWeight.bold, fontSize: 14.0)),
+                      child: Text(classroom['name'], style: TextStyle(fontWeight:FontWeight.bold, fontSize: 15.0)),
                     ),
                     SizedBox(
                       width: 200.0,
                       height: 140.0,
-                      child: Image.network((globals.mainUrl).toString()+(classroom.image).toString()),
+                      child: Image.network((globals.mainUrl).toString()+(classroom['image']).toString()),
                     ),
+                    // Text(classroom['description']),
                     Container(
-                      padding: EdgeInsets.only(bottom:5.0, right:10.0, left:5.0),
+                      padding: EdgeInsets.only(left:5.0, right: 5.0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          Text("", style: TextStyle(fontSize: 10.0)),
-                          Text("", style: TextStyle(fontSize: 10.0)),
-                          Text("Taught By-", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 10.0)),
-                          Text(classroom.username, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0))
+                          Text("Taught By ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
+                          Text(classroom['creator']['username'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
                         ],
                       )
-                    )
+                    ),
+                    // Container(
+                    //   padding: EdgeInsets.only(left:5.0, right: 5.0),
+                    //   child: Row(
+                    //     children: <Widget>[
+                    //       Text("Created on ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
+                    //       Text(classroom['created_at'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0)),
+                    //     ],
+                    //   )
+                    // )
                   ],
                 ),
               )
@@ -98,31 +106,6 @@ Widget classroomdetails() {
     },
   );
   return clls;
-}
-
-class ClassroomDetail {
-  String id, name, username, created_at, image;
-  bool is_active;
-
-  ClassroomDetail({
-    this.id,
-    this.name,
-    this.username,
-    this.created_at,
-    this.is_active,
-    this.image
-  });
-
-  factory ClassroomDetail.fromJson(Map<String, dynamic> parsedJson){
-    return ClassroomDetail(
-      id: parsedJson['id'].toString(),
-      name : parsedJson['name'].toString(),
-      username : parsedJson ['username'].toString(),
-      created_at: parsedJson['created_at'].toString(),
-      is_active: parsedJson['is_active'],
-      image: parsedJson['image']
-    );
-  }
 }
 
 class JoinClassroom extends StatefulWidget {
@@ -178,7 +161,7 @@ class _DashboardState extends State<Dashboard> {
               onTap: () {
                 Navigator.of(context).pop();
                 Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => MyProfile()),
+                  MaterialPageRoute(builder: (context) => MyProfile(userName: widget.userName)),
                 );
               },
             ),
@@ -193,7 +176,7 @@ class _DashboardState extends State<Dashboard> {
               title: Text('LogOut'),
               onTap: () {
                 _logout();
-                Navigator.of(context).pushNamed('/login');
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
               },
             ),
           ],
@@ -228,11 +211,26 @@ class _DashboardContentState extends State<DashboardContent> {
   }
 }
 
-
+Future<dynamic> joinClassroom(classroomCode) async {
+  Map data = {
+    'joinCode': classroomCode
+  };
+  final url = (globals.mainUrl).toString()+'/classroom/joinclassroom/';
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.post(url, headers: {"Authorization": "JWT "+token.toString()}, body: data);
+  if (response.statusCode == 200){
+    dynamic responseJson = json.decode(response.body);
+    return responseJson;
+  }else{
+    throw Exception('Failed to load data');
+  }
+}
 
 class _JoinClassroomState extends State<JoinClassroom> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  
+  final classroomCodeController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
@@ -247,6 +245,7 @@ class _JoinClassroomState extends State<JoinClassroom> {
               child: Column(
                 children: <Widget>[
                   TextFormField(
+                    controller: classroomCodeController,
                     decoration: InputDecoration(
                       hintText: 'Ex. 01234',
                       labelText: 'Classroom Code',
@@ -263,7 +262,8 @@ class _JoinClassroomState extends State<JoinClassroom> {
                       child: Text('Join'),
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
-                          Navigator.pop(context);
+                          dynamic response = joinClassroom(classroomCodeController.text);
+                          Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (Route<dynamic> route) => false);
                         }
                       },
                     ),

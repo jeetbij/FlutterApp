@@ -1,16 +1,35 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'globals.dart' as globals;
 import './classroom.dart';
 
 class Announcement extends StatefulWidget {
-  Announcement({Key key}) : super(key: key);
+  final String classroomId;
+  Announcement({Key key, this.classroomId}) : super(key: key);
   @override
   _AnnouncementState createState() => _AnnouncementState();
 }
 
-List<Widget> listofannouncement(screenWidth, buttonPosition) {
+Future<dynamic> fetchAnnouncement(classroomId) async {
+  final url = (globals.mainUrl).toString()+'/announcement/?classroom_id='+(classroomId).toString();
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
+  if (response.statusCode == 200){
+    dynamic responseJson = json.decode(response.body);
+    return responseJson;
+  }else{
+    throw Exception('Failed to load data');
+  }
+}
+
+List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList) {
   List<Widget> announcements = List();
-  for(var i=0;i<=5;i++){
+  for(dynamic announce in announcementList){
     announcements.add(
       Card(
         child: SizedBox(
@@ -20,7 +39,7 @@ List<Widget> listofannouncement(screenWidth, buttonPosition) {
             padding: const EdgeInsets.only(top:15.0, right:10.0, left:10.0),
             child: Column(
               children: <Widget> [
-                Text("The returned string is parsable by parse. For any int "+i.toString()+", it is guaranteed that "+i.toString()+" == \n Returns a String-representation of this integer."+"The returned string is parsable by parse. For any int "+i.toString()+", it is guaranteed that "+i.toString()+" == \n Returns a String-representation of this integer.", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10.0)),
+                Text(announce['content'], style: TextStyle(fontSize: 18.0), textAlign: TextAlign.justify,),
                 Container(
                   padding: EdgeInsets.only(left:buttonPosition, top: 10.0, bottom: 5.0),
                   child: GestureDetector(
@@ -52,9 +71,25 @@ class _AnnouncementState extends State<Announcement> {
       ),
       drawer: MainDrawer(),
       body: SingleChildScrollView(
-        child: Column(
-          children: listofannouncement(screenWidth, buttonPosition),
-        ),
+        child: FutureBuilder<dynamic>(
+          future: fetchAnnouncement(widget.classroomId),
+          builder: (context, snapshot) {
+            if(snapshot.hasData){
+              print(snapshot.data);
+              return Column(
+                children: listofannouncement(screenWidth, buttonPosition, snapshot.data),
+              );
+            }else if(snapshot.hasError){
+              return Center(
+                child: Text('Error: ${snapshot.error}'),
+              );
+            }else{
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
+        )
       ),
     );
   }

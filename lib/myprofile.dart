@@ -4,17 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'globals.dart' as globals;
 import './dashboard.dart';
 
 
 class MyProfile extends StatefulWidget {
-  MyProfile({Key key}) : super(key: key);
+  final String userName;
+  MyProfile({Key key, this.userName}) : super(key: key);
   @override
   _MyProfileState createState() => _MyProfileState();
 }
 
-Future<User> userProfile() async {
-  final url = "http://jeet007.pythonanywhere.com/userauth/user/?username=itsadmin";
+Future<User> userProfile(userName) async {
+  final url = (globals.mainUrl).toString()+"/userauth/user/?username="+userName.toString();
   final SharedPreferences sp = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
   dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
@@ -77,7 +79,7 @@ class _MyProfileState extends State<MyProfile> {
                         onTap: () {
                           Navigator.of(context).pop();
                           Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => Dashboard()),
+                            MaterialPageRoute(builder: (context) => Dashboard(userName: widget.userName,)),
                           );
                         },
                       ),
@@ -104,8 +106,7 @@ class _MyProfileState extends State<MyProfile> {
               leading: Icon(Icons.power_settings_new),
               title: Text('LogOut'),
               onTap: () {
-                Navigator.of(context).pop();
-                Navigator.popUntil(context, ModalRoute.withName('/login'));
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
               },
             ),
           ],
@@ -114,7 +115,7 @@ class _MyProfileState extends State<MyProfile> {
       body: SingleChildScrollView(
         child: Container(
           child: FutureBuilder<User>(
-            future: userProfile(),
+            future: userProfile(widget.userName),
             builder: (context, snapshot) {
               if(snapshot.hasData){
                 dynamic user = snapshot.data;
@@ -125,7 +126,7 @@ class _MyProfileState extends State<MyProfile> {
                       child: SizedBox(
                         width: 200.0,
                         height: 200.0,
-                        child: Image.network("http://jeet007.pythonanywhere.com"+(user.avatar).toString()),
+                        child: Image.network((globals.mainUrl).toString()+(user.avatar).toString()),
                       ),
                     ),
                     Container(

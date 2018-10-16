@@ -12,7 +12,13 @@ class Classroom extends StatefulWidget {
  _ClassroomState createState() => _ClassroomState();
 }
 
+Future<dynamic> fetchAnnouncment() async {
+  
+}
+
 class MainDrawer extends StatefulWidget {
+  final String classroomId;
+  MainDrawer({Key key, this.classroomId}) : super(key: key);
   @override
   _MainDrawerState createState() => _MainDrawerState();
 }
@@ -26,7 +32,7 @@ class _ClassroomState extends State<Classroom> {
         title: Text("Classroom"),
         backgroundColor: Color(0xFF42A5F5),
       ),
-      drawer: MainDrawer(),
+      drawer: MainDrawer(classroomId: widget.classroomId),
       body: SingleChildScrollView(
         child: Container(
           child: Text('Classroom Id : ' +"${widget.classroomId}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
@@ -85,7 +91,7 @@ class _MainDrawerState extends State<MainDrawer> {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.push(context,
-                MaterialPageRoute(builder: (context) => Announcement()),
+                MaterialPageRoute(builder: (context) => Announcement(classroomId: widget.classroomId)),
               );
             },
           ),
@@ -142,7 +148,7 @@ class _MainDrawerState extends State<MainDrawer> {
             leading: Icon(Icons.power_settings_new),
             title: Text('LogOut'),
             onTap: () {
-              Navigator.popUntil(context, ModalRoute.withName('/login'));
+              Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
             },
           ), 
         ],
