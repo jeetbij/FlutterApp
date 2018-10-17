@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'globals.dart' as globals;
 import './classroom.dart';
+import './comment.dart';
 
 class Announcement extends StatefulWidget {
   final String classroomId;
@@ -27,8 +28,9 @@ Future<dynamic> fetchAnnouncement(classroomId) async {
   }
 }
 
-List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList) {
+List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, context) {
   List<Widget> announcements = List();
+  double rightPadding = screenWidth - 100;
   for(dynamic announce in announcementList){
     announcements.add(
       Card(
@@ -41,11 +43,25 @@ List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList) {
               children: <Widget> [
                 Text(announce['content'], style: TextStyle(fontSize: 18.0), textAlign: TextAlign.justify,),
                 Container(
+                  padding: EdgeInsets.only(right: rightPadding, left: 5.0, bottom: 5.0, top: 5.0),
+                  child: Text("--"+(announce['announcer']['username'])),
+                ),
+                Container(
                   padding: EdgeInsets.only(left:buttonPosition, top: 10.0, bottom: 5.0),
                   child: GestureDetector(
-                    child: Text("Comment", style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Icons.comment, color: Colors.grey,),
+                        Text("Comment", style: TextStyle(fontWeight: FontWeight.bold)),
+                      ],
+                    ),
                     onTap: () {
-
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Comment(type: "announcement", id: announce['id'].toString())
+                        ),
+                      );
                     },
                   ),
                 ),
@@ -75,9 +91,8 @@ class _AnnouncementState extends State<Announcement> {
           future: fetchAnnouncement(widget.classroomId),
           builder: (context, snapshot) {
             if(snapshot.hasData){
-              print(snapshot.data);
               return Column(
-                children: listofannouncement(screenWidth, buttonPosition, snapshot.data),
+                children: listofannouncement(screenWidth, buttonPosition, snapshot.data, context),
               );
             }else if(snapshot.hasError){
               return Center(

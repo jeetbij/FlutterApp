@@ -34,9 +34,9 @@ Future<dynamic> fetchClassroom() async {
   }
 }
 
-Widget classroomdetails() {
+Widget classroomdetails(screenWidth) {
   List <Widget> classrooms = List();
-
+  double leftPadding = screenWidth - 290;
   dynamic clls = FutureBuilder<dynamic>(
     future: fetchClassroom(),
     builder: (context, snapshot) {
@@ -50,48 +50,52 @@ Widget classroomdetails() {
                   MaterialPageRoute(builder: (context) => Classroom(classroomId: classroom['id'].toString())),
                   );
               },
-              child: Card(
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.only(top: 5.0),
-                      child: Text(classroom['name'], style: TextStyle(fontWeight:FontWeight.bold, fontSize: 15.0)),
-                    ),
-                    SizedBox(
-                      width: 200.0,
-                      height: 140.0,
-                      child: Image.network((globals.mainUrl).toString()+(classroom['image']).toString()),
-                    ),
-                    // Text(classroom['description']),
-                    Container(
-                      padding: EdgeInsets.only(left:5.0, right: 5.0),
-                      child: Row(
-                        children: <Widget>[
-                          Text("Taught By ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
-                          Text(classroom['creator']['username'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
-                        ],
+              child: Container(
+               height: 300.0,
+                child: Card(
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.only(top: 5.0),
+                        child: Text(classroom['name'], style: TextStyle(fontWeight:FontWeight.bold, fontSize: 15.0)),
+                      ),
+                      SizedBox(
+                        width: screenWidth,
+                        height: 140.0,
+                        child: Image.network((globals.mainUrl).toString()+(classroom['image']).toString()),
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(5.0),
+                        child: Text(classroom['description'], textAlign: TextAlign.left, style: TextStyle(fontSize: 16.0),),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(left:5.0, right: 5.0, top: 5.0),
+                        child: Row(
+                          children: <Widget>[
+                            Text("--Taught By ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
+                            Text(classroom['creator']['username'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                          ],
+                        )
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(left:leftPadding, right: 5.0),
+                        child: Row(
+                          children: <Widget>[
+                            Text("Created on ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
+                            Text(classroom['created_at'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0)),
+                          ],
+                        )
                       )
-                    ),
-                    // Container(
-                    //   padding: EdgeInsets.only(left:5.0, right: 5.0),
-                    //   child: Row(
-                    //     children: <Widget>[
-                    //       Text("Created on ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
-                    //       Text(classroom['created_at'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0)),
-                    //     ],
-                    //   )
-                    // )
-                  ],
-                ),
+                    ],
+                  ),
+                )
               )
             )
           );
         }
-        return GridView.count(
+        return ListView(
           primary: false,
           padding: const EdgeInsets.all(10.0),
-          crossAxisSpacing: 10.0,
-          crossAxisCount: 2,
           children: classrooms,
         );
       }else if(snapshot.hasError){
@@ -205,8 +209,9 @@ class _DashboardState extends State<Dashboard> {
 class _DashboardContentState extends State<DashboardContent> {
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      child: classroomdetails()
+      child: classroomdetails(screenWidth)
     );
   }
 }
