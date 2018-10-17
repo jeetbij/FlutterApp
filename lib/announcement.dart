@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import "package:pull_to_refresh/pull_to_refresh.dart";
 
 import 'globals.dart' as globals;
 import './classroom.dart';
@@ -40,11 +41,12 @@ List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, c
           child: Container(
             padding: const EdgeInsets.only(top:15.0, right:10.0, left:10.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget> [
                 Text(announce['content'], style: TextStyle(fontSize: 18.0), textAlign: TextAlign.justify,),
                 Container(
                   padding: EdgeInsets.only(right: rightPadding, left: 5.0, bottom: 5.0, top: 5.0),
-                  child: Text("--"+(announce['announcer']['username'])),
+                  child: Text("--"+(announce['announcer']['username']), style: TextStyle(fontStyle: FontStyle.italic),),
                 ),
                 Container(
                   padding: EdgeInsets.only(left:buttonPosition, top: 10.0, bottom: 5.0),
@@ -52,7 +54,7 @@ List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, c
                     child: Row(
                       children: <Widget>[
                         Icon(Icons.comment, color: Colors.grey,),
-                        Text("Comment", style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text("  "+announce['commentCount'].toString(), style: TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                     onTap: () {

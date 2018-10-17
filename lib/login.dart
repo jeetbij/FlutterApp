@@ -90,6 +90,7 @@ class _LoginState extends State<Login> {
                                 response.then((data) {
                                   SharedPreferences.getInstance().then((SharedPreferences sp) {
                                     sp.setString('login_token', data['token'].toString());
+                                    sp.setString('username', usernameController.text);
                                   });
                                   if(data['token'] != null) {
                                     Navigator.push(

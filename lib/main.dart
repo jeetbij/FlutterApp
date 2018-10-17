@@ -7,6 +7,7 @@ import 'classroom.dart';
 import 'assignment.dart';
 import 'announcement.dart';
 import 'lecture.dart';
+import 'comment.dart';
 
 void main() => runApp(MyApp());
 
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         '/assignment': (BuildContext context) => Assignment(),
         '/announcement': (BuildContext context) => Announcement(),
         '/lecture': (BuildContext context) => Lecture(),
+        '/comment': (BuildContext context) => Comment(),
       },
     );
   }

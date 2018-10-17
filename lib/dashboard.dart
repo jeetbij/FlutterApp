@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
 import 'globals.dart' as globals;
 import './classroom.dart';
@@ -36,7 +37,7 @@ Future<dynamic> fetchClassroom() async {
 
 Widget classroomdetails(screenWidth) {
   List <Widget> classrooms = List();
-  double leftPadding = screenWidth - 290;
+  double leftPadding = screenWidth - 220;
   dynamic clls = FutureBuilder<dynamic>(
     future: fetchClassroom(),
     builder: (context, snapshot) {
@@ -71,20 +72,23 @@ Widget classroomdetails(screenWidth) {
                       Container(
                         padding: EdgeInsets.only(left:5.0, right: 5.0, top: 5.0),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            Text("--Taught By ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
-                            Text(classroom['creator']['username'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Text("--Taught By ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
+                                Text(classroom['creator']['username'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),
+                              ],
+                            ),
+                            Row(
+                              children: <Widget>[
+                                Text("Created on ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
+                                Text(DateFormat.yMMMMd("en_US").format(DateTime.parse(classroom['created_at'].toString())), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0)),
+                              ],
+                            )
                           ],
-                        )
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(left:leftPadding, right: 5.0),
-                        child: Row(
-                          children: <Widget>[
-                            Text("Created on ", style: TextStyle(fontStyle: FontStyle.italic, fontSize: 14.0)),
-                            Text(classroom['created_at'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.0)),
-                          ],
-                        )
+                        ),
                       )
                     ],
                   ),

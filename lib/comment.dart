@@ -23,7 +23,24 @@ Future<dynamic> allParentComments(type, id) async {
   String token = sp.getString('login_token');
   dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
   if(response.statusCode == 200){
-    print(json.decode(response.body));
+    return json.decode(response.body);
+  }else{
+    throw Exception('Failed to load data');
+  }
+}
+
+Future<Map> postComment(announcementId, content) async {
+  Map data = {
+    'announcement_id': announcementId,
+    'comment_id': '',
+    'content': content
+  };
+  final url = (globals.mainUrl).toString()+'/announcement/comment/';
+  final SharedPreferences sp  = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.post(url, headers: {"Authorization": "JWT "+token.toString()}, body: data);
+  print(response.body);
+  if (response.statusCode == 200){
     return json.decode(response.body);
   }else{
     throw Exception('Failed to load data');
@@ -33,7 +50,6 @@ Future<dynamic> allParentComments(type, id) async {
 List<Widget> listOfComments(comments, screenWidth) {
   List<Widget> allComments = List();
   double commentMaxWidth = screenWidth - 100;
-  print(commentMaxWidth);
   dynamic commentList = comments['comments'];
   for (dynamic comment in commentList) {
     allComments.add(
@@ -88,24 +104,15 @@ List<Widget> listOfComments(comments, screenWidth) {
                           child: Row(
                             children: <Widget> [
                               Icon(Icons.thumb_up, color: Colors.grey,),
-                              Text("Upvote", style: TextStyle(fontWeight:FontWeight.bold),),
+                              Text(" "+(comment['upvoters'].length).toString()),
+                              Text("  "),
+                              Icon(Icons.thumb_down, color: Colors.grey,),
+                              Text(" "+(comment['downvoters'].length).toString()),
+                              // Text("Upvote", style: TextStyle(fontWeight:FontWeight.bold),),
                             ],
                           ),
                           onTap: () {
                             
-                          },
-                        )
-                      ),
-                      Container(
-                        child: GestureDetector(
-                          child: Row(
-                            children: <Widget> [
-                              Icon(Icons.thumb_down, color: Colors.grey,),
-                              Text("Downvote", style: TextStyle(fontWeight:FontWeight.bold),),
-                            ],
-                          ),
-                          onTap: () {
-
                           },
                         )
                       ),
@@ -152,32 +159,41 @@ class _CommentState extends State<Comment> {
           future: allParentComments(widget.type, widget.id),
           builder: (context, snapshot) {
             if(snapshot.hasData){
-              return Column(
-                children: <Widget>[
-                  SingleChildScrollView(
-                    child: Column(
-                      children: listOfComments(snapshot.data, screenWidth),
+              return SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    SingleChildScrollView(
+                      child: Column(
+                        children: listOfComments(snapshot.data, screenWidth),
+                      ),
                     ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.only(left:10.0, right: 10.0, top:20.0),
-                    child: Form(
-                      key: this._formKey,
-                      child: TextFormField(
-                      controller: commentTextController,
-                      decoration: InputDecoration(
-                          hintText: 'Comment',
-                          labelText: 'Enter your text here...'
-                      ),
-                      validator: (value) {
-                          if (value.isEmpty) {
-                          return "Please enter some text.";
-                          }
-                        }
-                      ),
-                    )
-                  ),
-                ],
+                    Container(
+                      margin: EdgeInsets.only(left:10.0, right: 10.0, top:20.0),
+                      child: Form(
+                        key: this._formKey,
+                        child: ListTile(
+                          title: TextFormField(
+                            controller: commentTextController,
+                            decoration: InputDecoration(
+                                hintText: 'Comment',
+                                labelText: 'Enter your text here...'
+                            ),
+                            validator: (value) {
+                                if (value.isEmpty) {
+                                return "Please enter some text.";
+                                }
+                              }
+                            ),
+                          trailing: Icon(Icons.send),
+                          onTap: () {
+                            dynamic response = postComment(snapshot.data['id'].toString(), commentTextController.text);
+                            // Navigator.of(context).pushNamedAndRemoveUntil('/comment', (Route<dynamic> route) => false);
+                          },
+                        )
+                      )
+                    ),
+                  ],
+                ),
               );
             }else if(snapshot.hasError){
               return Center(
