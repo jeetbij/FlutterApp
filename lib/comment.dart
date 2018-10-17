@@ -62,7 +62,7 @@ List<Widget> listOfComments(comments, screenWidth) {
             margin: EdgeInsets.only(top: 10.0),
             padding: EdgeInsets.only(left: 8.0, top: 5.0, right: 5.0),
             decoration: BoxDecoration(
-              color: Colors.grey[350],
+              color: Colors.grey[200],
               border: Border.all(
                 color: Colors.black12
               ),
@@ -136,6 +136,8 @@ List<Widget> listOfComments(comments, screenWidth) {
 }
 
 class _CommentState extends State<Comment> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final commentTextController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -151,7 +153,31 @@ class _CommentState extends State<Comment> {
           builder: (context, snapshot) {
             if(snapshot.hasData){
               return Column(
-                children: listOfComments(snapshot.data, screenWidth),
+                children: <Widget>[
+                  SingleChildScrollView(
+                    child: Column(
+                      children: listOfComments(snapshot.data, screenWidth),
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(left:10.0, right: 10.0, top:20.0),
+                    child: Form(
+                      key: this._formKey,
+                      child: TextFormField(
+                      controller: commentTextController,
+                      decoration: InputDecoration(
+                          hintText: 'Comment',
+                          labelText: 'Enter your text here...'
+                      ),
+                      validator: (value) {
+                          if (value.isEmpty) {
+                          return "Please enter some text.";
+                          }
+                        }
+                      ),
+                    )
+                  ),
+                ],
               );
             }else if(snapshot.hasError){
               return Center(
