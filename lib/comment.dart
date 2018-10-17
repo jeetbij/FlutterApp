@@ -30,8 +30,10 @@ Future<dynamic> allParentComments(type, id) async {
   }
 }
 
-List<Widget> listOfComments(comments) {
+List<Widget> listOfComments(comments, screenWidth) {
   List<Widget> allComments = List();
+  double commentMaxWidth = screenWidth - 100;
+  print(commentMaxWidth);
   dynamic commentList = comments['comments'];
   for (dynamic comment in commentList) {
     allComments.add(
@@ -45,7 +47,7 @@ List<Widget> listOfComments(comments) {
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(
-                color: Colors.black
+                color: Colors.black12
               ),
               borderRadius: BorderRadius.all(
                 Radius.circular(50.0)
@@ -54,24 +56,75 @@ List<Widget> listOfComments(comments) {
             child: Image.network((globals.mainUrl).toString()+comment['commenter']['avatar'].toString()),
           ),
           Container(
-            width: 300.0,
+            constraints: BoxConstraints(
+              maxWidth: commentMaxWidth,
+            ),
+            margin: EdgeInsets.only(top: 10.0),
+            padding: EdgeInsets.only(left: 8.0, top: 5.0, right: 5.0),
             decoration: BoxDecoration(
               color: Colors.grey[350],
               border: Border.all(
                 color: Colors.black12
               ),
               borderRadius: BorderRadius.all(
-                Radius.circular(3.0)
+                Radius.circular(10.0)
               )
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget> [
                 Container(
-                  margin: EdgeInsets.only(left: 0.0),
-                  padding: EdgeInsets.only(left: 0.0),
+                  padding: EdgeInsets.only(left: 5.0, bottom: 10.0),
                   child: Text(comment['commenter']['username'], style: TextStyle(fontWeight:FontWeight.bold, fontSize: 16.0), textAlign: TextAlign.left,),
                 ),
-                Text(comment['comment_text'], style: TextStyle(fontSize: 16.0),)
+                Text(comment['comment_text'], style: TextStyle(fontSize: 16.0),),
+                Container(
+                  margin: EdgeInsets.all(5.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Container(
+                        child: GestureDetector(
+                          child: Row(
+                            children: <Widget> [
+                              Icon(Icons.thumb_up, color: Colors.grey,),
+                              Text("Upvote", style: TextStyle(fontWeight:FontWeight.bold),),
+                            ],
+                          ),
+                          onTap: () {
+                            
+                          },
+                        )
+                      ),
+                      Container(
+                        child: GestureDetector(
+                          child: Row(
+                            children: <Widget> [
+                              Icon(Icons.thumb_down, color: Colors.grey,),
+                              Text("Downvote", style: TextStyle(fontWeight:FontWeight.bold),),
+                            ],
+                          ),
+                          onTap: () {
+
+                          },
+                        )
+                      ),
+                      Container(
+                        child: GestureDetector(
+                          child: Row(
+                            children: <Widget> [
+                              Icon(Icons.replay, color: Colors.grey,),
+                              Text("reply", style: TextStyle(fontWeight:FontWeight.bold),),
+                            ],
+                          ),
+                          onTap: () {
+
+                          },
+                        )
+                      ),
+                    ]
+                  )
+                )
               ],
             )
           ),
@@ -85,6 +138,7 @@ List<Widget> listOfComments(comments) {
 class _CommentState extends State<Comment> {
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: Text("Comments"),
@@ -95,10 +149,9 @@ class _CommentState extends State<Comment> {
         child: FutureBuilder<dynamic>(
           future: allParentComments(widget.type, widget.id),
           builder: (context, snapshot) {
-            print(snapshot.data);
             if(snapshot.hasData){
               return Column(
-                children: listOfComments(snapshot.data),
+                children: listOfComments(snapshot.data, screenWidth),
               );
             }else if(snapshot.hasError){
               return Center(
