@@ -78,12 +78,12 @@ List<Widget> listOfComments(comments, screenWidth) {
             margin: EdgeInsets.only(top: 10.0),
             padding: EdgeInsets.only(left: 8.0, top: 5.0, right: 5.0),
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: Colors.grey[100],
               border: Border.all(
                 color: Colors.black12
               ),
               borderRadius: BorderRadius.all(
-                Radius.circular(10.0)
+                Radius.circular(15.0)
               )
             ),
             child: Column(
@@ -93,28 +93,32 @@ List<Widget> listOfComments(comments, screenWidth) {
                   padding: EdgeInsets.only(left: 5.0, bottom: 10.0),
                   child: Text(comment['commenter']['username'], style: TextStyle(fontWeight:FontWeight.bold, fontSize: 16.0), textAlign: TextAlign.left,),
                 ),
-                Text(comment['comment_text'], style: TextStyle(fontSize: 16.0),),
+                Text(comment['comment_text'].toString(), style: TextStyle(fontSize: 16.0),),
                 Container(
                   margin: EdgeInsets.all(5.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Container(
-                        child: GestureDetector(
-                          child: Row(
-                            children: <Widget> [
-                              Icon(Icons.thumb_up, color: Colors.grey,),
-                              Text(" "+(comment['upvoters'].length).toString()),
-                              Text("  "),
-                              Icon(Icons.thumb_down, color: Colors.grey,),
-                              Text(" "+(comment['downvoters'].length).toString()),
-                              // Text("Upvote", style: TextStyle(fontWeight:FontWeight.bold),),
-                            ],
-                          ),
-                          onTap: () {
-                            
-                          },
-                        )
+                        child: Row(
+                          children: <Widget> [
+                            GestureDetector(
+                              child: Icon(Icons.thumb_up, color: Colors.grey,),
+                              onTap: () {
+
+                              },
+                            ),
+                            Text(" "+(comment['upvoters'].length).toString()),
+                            Text("  "),
+                            GestureDetector(
+                              child: Icon(Icons.thumb_down, color: Colors.grey,),
+                              onTap: () {
+
+                              },
+                            ),
+                            Text(" "+(comment['downvoters'].length).toString()),
+                          ],
+                        ),
                       ),
                       Container(
                         child: GestureDetector(
@@ -184,10 +188,11 @@ class _CommentState extends State<Comment> {
                                 }
                               }
                             ),
-                          trailing: Icon(Icons.send),
+                          trailing: Icon(Icons.send,
+                          color: Colors.blue,),
                           onTap: () {
                             dynamic response = postComment(snapshot.data['id'].toString(), commentTextController.text);
-                            // Navigator.of(context).pushNamedAndRemoveUntil('/comment', (Route<dynamic> route) => false);
+                            // Navigator.of(context).pushNamedAndRemoveUntil('/announcement', (Route<dynamic> route) => false);
                           },
                         )
                       )

@@ -43,7 +43,7 @@ List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, c
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget> [
-                Text(announce['content'], style: TextStyle(fontSize: 18.0), textAlign: TextAlign.justify,),
+                Text(""+(announce['content']).toString(), style: TextStyle(fontSize: 18.0), textAlign: TextAlign.justify,),
                 Container(
                   padding: EdgeInsets.only(right: rightPadding, left: 5.0, bottom: 5.0, top: 5.0),
                   child: Text("--"+(announce['announcer']['username']), style: TextStyle(fontStyle: FontStyle.italic),),
