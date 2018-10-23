@@ -8,8 +8,8 @@ import 'globals.dart' as globals;
 import './classroom.dart';
 
 class Comment extends StatefulWidget {
-  final String type, id;
-  Comment({Key key, this.type, this.id}) : super(key: key);
+  final String type, id, classroomId;
+  Comment({Key key, this.type, this.id, this.classroomId}) : super(key: key);
   @override
   _CommentState createState() => _CommentState();
 }
@@ -39,13 +39,42 @@ Future<Map> postComment(announcementId, content) async {
   final SharedPreferences sp  = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
   dynamic response = await http.post(url, headers: {"Authorization": "JWT "+token.toString()}, body: data);
-  print(response.body);
   if (response.statusCode == 200){
     return json.decode(response.body);
   }else{
     throw Exception('Failed to load data');
   }
 }
+
+
+Future checkUser() async {
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  return sp.getString('username');
+}
+
+Future voteComment(type, commentId) async {
+  Map<String, dynamic> data = {
+    'type': type,
+    'comment_id': commentId,
+  };
+  String jsonString = json.encode(data);
+  final url = (globals.mainUrl).toString()+'/comment/';
+  final SharedPreferences sp  = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.put(url, headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString);
+}
+
+// Future removevoteComment(type, commentId) async {
+//   Map<String, dynamic> data = {
+//     'type': type,
+//     'comment_id': commentId,
+//   };
+//   String jsonString = json.encode(data);
+//   final url = (globals.mainUrl).toString()+'/comment/';
+//   final SharedPreferences sp  = await SharedPreferences.getInstance();
+//   String token = sp.getString('login_token');
+//   dynamic response = await http.delete(url, headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString);
+// }
 
 List<Widget> listOfComments(comments, screenWidth) {
   List<Widget> allComments = List();
@@ -100,24 +129,106 @@ List<Widget> listOfComments(comments, screenWidth) {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
                       Container(
-                        child: Row(
-                          children: <Widget> [
-                            GestureDetector(
-                              child: Icon(Icons.thumb_up, color: Colors.grey,),
-                              onTap: () {
+                        child: FutureBuilder(
+                          future: checkUser(),
+                          builder: (BuildContext context, AsyncSnapshot snapshot) {
+                            String flag = '0';
+                            if(snapshot.hasData){
+                              for (dynamic downvoter in comment['downvoters']){
+                                if (downvoter['username'] == snapshot.data){
+                                  flag = '1';
+                                  break; 
+                                }
+                              }
+                              for (dynamic upvoter in comment['upvoters']){
+                                if (upvoter['username'] == snapshot.data){
+                                  flag = '2';
+                                  break; 
+                                }
+                              }
+                              if(flag == '1'){
+                                return Row(
+                                  children: <Widget> [
+                                    GestureDetector(
+                                      child: Icon(Icons.thumb_up, color: Colors.grey,),
+                                      onTap: () {
 
-                              },
-                            ),
-                            Text(" "+(comment['upvoters'].length).toString()),
-                            Text("  "),
-                            GestureDetector(
-                              child: Icon(Icons.thumb_down, color: Colors.grey,),
-                              onTap: () {
+                                      },
+                                    ),
+                                    Text(" "+(comment['upvoters'].length).toString()),
+                                    Text("  "),
+                                    GestureDetector(
+                                      child: Icon(Icons.thumb_down, color: Colors.blue,),
+                                      onTap: () {
 
-                              },
-                            ),
-                            Text(" "+(comment['downvoters'].length).toString()),
-                          ],
+                                      },
+                                    ),
+                                    Text(" "+(comment['downvoters'].length).toString()),
+                                  ],
+                                );
+                              }else if(flag == '2'){
+                                return Row(
+                                  children: <Widget> [
+                                    GestureDetector(
+                                      child: Icon(Icons.thumb_up, color: Colors.blue,),
+                                      onTap: () {
+
+                                      },
+                                    ),
+                                    Text(" "+(comment['upvoters'].length).toString()),
+                                    Text("  "),
+                                    GestureDetector(
+                                      child: Icon(Icons.thumb_down, color: Colors.grey,),
+                                      onTap: () {
+
+                                      },
+                                    ),
+                                    Text(" "+(comment['downvoters'].length).toString()),
+                                  ],
+                                );
+                              }else{
+                                return Row(
+                                  children: <Widget> [
+                                    GestureDetector(
+                                      child: Icon(Icons.thumb_up, color: Colors.grey,),
+                                      onTap: () {
+                                        voteComment(2, comment['id']);
+                                      },
+                                    ),
+                                    Text(" "+(comment['upvoters'].length).toString()),
+                                    Text("  "),
+                                    GestureDetector(
+                                      child: Icon(Icons.thumb_down, color: Colors.grey,),
+                                      onTap: () {
+                                        voteComment(3, comment['id']);
+                                      },
+                                    ),
+                                    Text(" "+(comment['downvoters'].length).toString()),
+                                  ],
+                                );
+                              }
+                            }else{
+                              return Row(
+                                children: <Widget> [
+                                  GestureDetector(
+                                    child: Icon(Icons.thumb_up, color: Colors.grey,),
+                                    onTap: () {
+                                      voteComment(2, comment['id']);
+                                    },
+                                  ),
+                                  Text(" "+(comment['upvoters'].length).toString()),
+                                  Text("  "),
+                                  GestureDetector(
+                                    child: Icon(Icons.thumb_down, color: Colors.grey,),
+                                    onTap: () {
+                                      voteComment(3, comment['id']);
+                                    },
+                                  ),
+                                  Text(" "+(comment['downvoters'].length).toString()),
+                                ],
+                              );
+                            }
+                          },
                         ),
                       ),
                       Container(
@@ -157,7 +268,7 @@ class _CommentState extends State<Comment> {
         title: Text("Comments"),
         backgroundColor: Color(0xFF42A5F5),
       ),
-      drawer: MainDrawer(),
+      drawer: MainDrawer(classroomId: widget.classroomId),
       body: Container(
         child: FutureBuilder<dynamic>(
           future: allParentComments(widget.type, widget.id),

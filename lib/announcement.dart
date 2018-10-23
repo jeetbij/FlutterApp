@@ -61,7 +61,7 @@ List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, c
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Comment(type: "announcement", id: announce['id'].toString())
+                          builder: (context) => Comment(type: "announcement", id: announce['id'].toString(), classroomId: announce['classroom']['id'],)
                         ),
                       );
                     },
@@ -87,7 +87,7 @@ class _AnnouncementState extends State<Announcement> {
         title: Text("Announcements"),
         backgroundColor: Color(0xFF42A5F5),
       ),
-      drawer: MainDrawer(),
+      drawer: MainDrawer(classroomId: widget.classroomId),
       body: SingleChildScrollView(
         child: FutureBuilder<dynamic>(
           future: fetchAnnouncement(widget.classroomId),
