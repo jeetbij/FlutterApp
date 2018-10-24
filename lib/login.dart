@@ -32,7 +32,8 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
+      body: Builder(
+        builder: (context) => SingleChildScrollView(
         child: Center(
           child: Container(
             child: Column(
@@ -92,6 +93,7 @@ class _LoginState extends State<Login> {
                                     sp.setString('login_token', data['token'].toString());
                                     sp.setString('username', usernameController.text);
                                   });
+                                  print(data['token']);
                                   if(data['token'] != null) {
                                     Navigator.push(
                                       context,
@@ -99,6 +101,11 @@ class _LoginState extends State<Login> {
                                           builder: (context) => Dashboard()
                                       ),
                                     );
+                                  }else{
+                                    FocusScope.of(context).requestFocus(FocusNode());
+                                    usernameController.clear();
+                                    passwordController.clear();
+                                    Scaffold.of(context).showSnackBar(SnackBar(content: Text("Invalid Credential.")));
                                   }
                                 });
                               }
@@ -115,6 +122,7 @@ class _LoginState extends State<Login> {
           ),
         ),
       ),
+      )
     );
   }
 }

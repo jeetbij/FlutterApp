@@ -31,7 +31,7 @@ class Submission extends StatefulWidget {
 
 class _SubmissionState extends State<Submission> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final classroomCodeController = TextEditingController();
+  final submittedFileController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class _SubmissionState extends State<Submission> {
               child: Column(
                 children: <Widget>[
                   TextFormField(
-                    controller: classroomCodeController,
+                    controller: submittedFileController,
                     decoration: InputDecoration(
                       labelText: 'Upload your file here..',
                     ),

@@ -4,6 +4,7 @@ import './dashboard.dart';
 import './assignment.dart';
 import './lecture.dart';
 import './announcement.dart';
+import './resources.dart';
 
 class Classroom extends StatefulWidget {
   final String classroomId;
@@ -110,6 +111,9 @@ class _MainDrawerState extends State<MainDrawer> {
             title: Text('Resources'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(context,
+                MaterialPageRoute(builder: (context) => Resource(classroomId: widget.classroomId)),
+              );
             },
           ),
           ListTile(
