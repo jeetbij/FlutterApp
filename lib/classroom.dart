@@ -132,7 +132,7 @@ class _MainDrawerState extends State<MainDrawer> {
             onTap: () {
               Navigator.of(context).pop();
               Navigator.push(context,
-                MaterialPageRoute(builder: (context) => Assignment()),
+                MaterialPageRoute(builder: (context) => Assignment(classroomId: widget.classroomId),),
               );
             },
           ),

@@ -52,7 +52,7 @@ Future checkUser() async {
   return sp.getString('username');
 }
 
-Future voteComment(type, commentId) async {
+Future voteComment(type, commentId, widgetKey) async {
   Map<String, dynamic> data = {
     'type': type,
     'comment_id': commentId,
@@ -62,6 +62,9 @@ Future voteComment(type, commentId) async {
   final SharedPreferences sp  = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
   dynamic response = await http.put(url, headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString);
+  if(response.statusCode == 200){
+    
+  }
 }
 
 // Future removevoteComment(type, commentId) async {
@@ -187,12 +190,14 @@ List<Widget> listOfComments(comments, screenWidth) {
                                   ],
                                 );
                               }else{
+                                const key = "greygrey";
                                 return Row(
+                                  key: Key(key),
                                   children: <Widget> [
                                     GestureDetector(
                                       child: Icon(Icons.thumb_up, color: Colors.grey,),
                                       onTap: () {
-                                        voteComment(2, comment['id']);
+                                        voteComment(2, comment['id'], key);
                                       },
                                     ),
                                     Text(" "+(comment['upvoters'].length).toString()),
@@ -200,7 +205,7 @@ List<Widget> listOfComments(comments, screenWidth) {
                                     GestureDetector(
                                       child: Icon(Icons.thumb_down, color: Colors.grey,),
                                       onTap: () {
-                                        voteComment(3, comment['id']);
+                                        voteComment(3, comment['id'], key);
                                       },
                                     ),
                                     Text(" "+(comment['downvoters'].length).toString()),
@@ -208,12 +213,14 @@ List<Widget> listOfComments(comments, screenWidth) {
                                 );
                               }
                             }else{
+                              const key = "bothgrey";
                               return Row(
                                 children: <Widget> [
                                   GestureDetector(
+                                    key: Key(key),
                                     child: Icon(Icons.thumb_up, color: Colors.grey,),
                                     onTap: () {
-                                      voteComment(2, comment['id']);
+                                      voteComment(2, comment['id'], key);
                                     },
                                   ),
                                   Text(" "+(comment['upvoters'].length).toString()),
@@ -221,7 +228,7 @@ List<Widget> listOfComments(comments, screenWidth) {
                                   GestureDetector(
                                     child: Icon(Icons.thumb_down, color: Colors.grey,),
                                     onTap: () {
-                                      voteComment(3, comment['id']);
+                                      voteComment(3, comment['id'], key);
                                     },
                                   ),
                                   Text(" "+(comment['downvoters'].length).toString()),

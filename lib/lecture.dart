@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'globals.dart' as globals;
 import 'classroom.dart';
@@ -53,8 +54,13 @@ List<Widget> listoflecture(lectures, screenWidth, buttonPosition) {
                         height: 20.0,
                         child: RaisedButton(
                           child: Text("Download", style: TextStyle(fontSize: 10.0)),
-                          onPressed: (() {
-                          
+                          onPressed: (() async {
+                            String url = (globals.mainUrl).toString()+lecture['attachment'];
+                            if (await canLaunch(url)) {
+                              await launch(url, forceSafariVC: true, forceWebView: true);
+                            } else {
+                              throw 'Could not launch $url';
+                            }
                           }),
                         ),
                       ),
@@ -91,9 +97,7 @@ class _LectureState extends State<Lecture> {
                 children: listoflecture(snapshot.data, screenWidth, buttonPosition),
               );
             }else{
-              return Center(
-                child: Text("failed to load data."),
-              );
+              return CircularProgressIndicator();
             }
           },
         ),

@@ -29,7 +29,7 @@ Future<dynamic> fetchAnnouncement(classroomId) async {
   }
 }
 
-List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, context) {
+List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, classroomId, context) {
   List<Widget> announcements = List();
   double rightPadding = screenWidth - 100;
   for(dynamic announce in announcementList){
@@ -61,7 +61,7 @@ List<Widget> listofannouncement(screenWidth, buttonPosition, announcementList, c
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Comment(type: "announcement", id: announce['id'].toString(), classroomId: announce['classroom']['id'],)
+                          builder: (context) => Comment(type: "announcement", id: announce['id'].toString(), classroomId: classroomId.toString(),)
                         ),
                       );
                     },
@@ -94,7 +94,7 @@ class _AnnouncementState extends State<Announcement> {
           builder: (context, snapshot) {
             if(snapshot.hasData){
               return Column(
-                children: listofannouncement(screenWidth, buttonPosition, snapshot.data, context),
+                children: listofannouncement(screenWidth, buttonPosition, snapshot.data, widget.classroomId, context),
               );
             }else if(snapshot.hasError){
               return Center(
