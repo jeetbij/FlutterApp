@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_client/console.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'globals.dart' as globals;
@@ -52,7 +53,7 @@ Future checkUser() async {
   return sp.getString('username');
 }
 
-Future voteComment(type, commentId, widgetKey) async {
+Future voteComment(type, commentId) async {
   Map<String, dynamic> data = {
     'type': type,
     'comment_id': commentId,
@@ -63,205 +64,225 @@ Future voteComment(type, commentId, widgetKey) async {
   String token = sp.getString('login_token');
   dynamic response = await http.put(url, headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString);
   if(response.statusCode == 200){
-    
+    return true;
+  }else{
+    return false;
   }
 }
 
-// Future removevoteComment(type, commentId) async {
-//   Map<String, dynamic> data = {
-//     'type': type,
-//     'comment_id': commentId,
-//   };
-//   String jsonString = json.encode(data);
-//   final url = (globals.mainUrl).toString()+'/comment/';
-//   final SharedPreferences sp  = await SharedPreferences.getInstance();
-//   String token = sp.getString('login_token');
-//   dynamic response = await http.delete(url, headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString);
-// }
+Future removevoteComment(type, commentId) async {
+  Map<String, dynamic> data = {
+    'type': type,
+    'comment_id': commentId,
+  };
+  final client = ConsoleClient();
+  String jsonString = json.encode(data);
+  final url = (globals.mainUrl).toString()+'/comment/';
+  final SharedPreferences sp  = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  // { headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString}
+  dynamic rs = await client.send(Request('DELETE', url, headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString, encoding: Encoding.getByName("utf-8")));
+  final response = await rs.readAsString();
+  print(response);
+  print(rs.statusCode);
+  if(rs.statusCode == 200){
+    return true;
+  }else{
+    return false;
+  }
+}
 
-List<Widget> listOfComments(comments, screenWidth) {
-  List<Widget> allComments = List();
-  double commentMaxWidth = screenWidth - 100;
-  dynamic commentList = comments['comments'];
-  for (dynamic comment in commentList) {
-    allComments.add(
-      Row(
-        children: <Widget>[
-          Container(
-            margin: EdgeInsets.all(10.0),
-            padding: EdgeInsets.all(8.0),
-            width: 60.0,
-            height: 60.0,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(
-                color: Colors.black12
-              ),
-              borderRadius: BorderRadius.all(
-                Radius.circular(50.0)
-              )
+class OneComment extends StatefulWidget {
+  dynamic comment;
+  OneComment({Key key, this.comment}) : super(key: key);
+  @override
+  _OneCommentState createState() => _OneCommentState(comment: comment);
+}
+
+class _OneCommentState extends State<OneComment> {
+  bool _upvoted = false;
+  bool _downvoted = false;
+  final comment;
+  _OneCommentState({this.comment});
+  int upvoter, downvoter;
+  @override
+    void initState() {
+      if(comment['has_Upvoted'].toString() == '1'){
+        _upvoted = true;
+      }
+      if(comment['has_Downvoted'].toString() == '1'){
+        _downvoted = true;
+      }
+      upvoter = comment['upvoters'].length;
+      downvoter = comment['downvoters'].length;
+      super.initState();
+    }
+
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double commentMaxWidth = screenWidth - 100;
+    return Row(
+      children: <Widget>[
+        Container(
+          margin: EdgeInsets.all(10.0),
+          padding: EdgeInsets.all(8.0),
+          width: 60.0,
+          height: 60.0,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(
+              color: Colors.black12
             ),
-            child: Image.network((globals.mainUrl).toString()+comment['commenter']['avatar'].toString()),
-          ),
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: commentMaxWidth,
-            ),
-            margin: EdgeInsets.only(top: 10.0),
-            padding: EdgeInsets.only(left: 8.0, top: 5.0, right: 5.0),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              border: Border.all(
-                color: Colors.black12
-              ),
-              borderRadius: BorderRadius.all(
-                Radius.circular(15.0)
-              )
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget> [
-                Container(
-                  padding: EdgeInsets.only(left: 5.0, bottom: 10.0),
-                  child: Text(comment['commenter']['username'], style: TextStyle(fontWeight:FontWeight.bold, fontSize: 16.0), textAlign: TextAlign.left,),
-                ),
-                Text(comment['comment_text'].toString(), style: TextStyle(fontSize: 16.0),),
-                Container(
-                  margin: EdgeInsets.all(5.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Container(
-                        child: FutureBuilder(
-                          future: checkUser(),
-                          builder: (BuildContext context, AsyncSnapshot snapshot) {
-                            String flag = '0';
-                            if(snapshot.hasData){
-                              for (dynamic downvoter in comment['downvoters']){
-                                if (downvoter['username'] == snapshot.data){
-                                  flag = '1';
-                                  break; 
-                                }
-                              }
-                              for (dynamic upvoter in comment['upvoters']){
-                                if (upvoter['username'] == snapshot.data){
-                                  flag = '2';
-                                  break; 
-                                }
-                              }
-                              if(flag == '1'){
-                                return Row(
-                                  children: <Widget> [
-                                    GestureDetector(
-                                      child: Icon(Icons.thumb_up, color: Colors.grey,),
-                                      onTap: () {
-
-                                      },
-                                    ),
-                                    Text(" "+(comment['upvoters'].length).toString()),
-                                    Text("  "),
-                                    GestureDetector(
-                                      child: Icon(Icons.thumb_down, color: Colors.blue,),
-                                      onTap: () {
-
-                                      },
-                                    ),
-                                    Text(" "+(comment['downvoters'].length).toString()),
-                                  ],
-                                );
-                              }else if(flag == '2'){
-                                return Row(
-                                  children: <Widget> [
-                                    GestureDetector(
-                                      child: Icon(Icons.thumb_up, color: Colors.blue,),
-                                      onTap: () {
-
-                                      },
-                                    ),
-                                    Text(" "+(comment['upvoters'].length).toString()),
-                                    Text("  "),
-                                    GestureDetector(
-                                      child: Icon(Icons.thumb_down, color: Colors.grey,),
-                                      onTap: () {
-
-                                      },
-                                    ),
-                                    Text(" "+(comment['downvoters'].length).toString()),
-                                  ],
-                                );
-                              }else{
-                                const key = "greygrey";
-                                return Row(
-                                  key: Key(key),
-                                  children: <Widget> [
-                                    GestureDetector(
-                                      child: Icon(Icons.thumb_up, color: Colors.grey,),
-                                      onTap: () {
-                                        voteComment(2, comment['id'], key);
-                                      },
-                                    ),
-                                    Text(" "+(comment['upvoters'].length).toString()),
-                                    Text("  "),
-                                    GestureDetector(
-                                      child: Icon(Icons.thumb_down, color: Colors.grey,),
-                                      onTap: () {
-                                        voteComment(3, comment['id'], key);
-                                      },
-                                    ),
-                                    Text(" "+(comment['downvoters'].length).toString()),
-                                  ],
-                                );
-                              }
-                            }else{
-                              const key = "bothgrey";
-                              return Row(
-                                children: <Widget> [
-                                  GestureDetector(
-                                    key: Key(key),
-                                    child: Icon(Icons.thumb_up, color: Colors.grey,),
-                                    onTap: () {
-                                      voteComment(2, comment['id'], key);
-                                    },
-                                  ),
-                                  Text(" "+(comment['upvoters'].length).toString()),
-                                  Text("  "),
-                                  GestureDetector(
-                                    child: Icon(Icons.thumb_down, color: Colors.grey,),
-                                    onTap: () {
-                                      voteComment(3, comment['id'], key);
-                                    },
-                                  ),
-                                  Text(" "+(comment['downvoters'].length).toString()),
-                                ],
-                              );
-                            }
-                          },
-                        ),
-                      ),
-                      Container(
-                        child: GestureDetector(
-                          child: Row(
-                            children: <Widget> [
-                              Icon(Icons.replay, color: Colors.grey,),
-                              Text("reply", style: TextStyle(fontWeight:FontWeight.bold),),
-                            ],
-                          ),
-                          onTap: () {
-
-                          },
-                        )
-                      ),
-                    ]
-                  )
-                )
-              ],
+            borderRadius: BorderRadius.all(
+              Radius.circular(50.0)
             )
           ),
-        ],
-      )
+          child: Image.network((globals.mainUrl).toString()+widget.comment['commenter']['avatar'].toString()),
+        ),
+        Container(
+          constraints: BoxConstraints(
+            maxWidth: commentMaxWidth,
+          ),
+          margin: EdgeInsets.only(top: 10.0),
+          padding: EdgeInsets.only(left: 8.0, top: 5.0, right: 5.0),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            border: Border.all(
+              color: Colors.black12
+            ),
+            borderRadius: BorderRadius.all(
+              Radius.circular(15.0)
+            )
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget> [
+              Container(
+                padding: EdgeInsets.only(left: 5.0, bottom: 10.0),
+                child: Text(widget.comment['commenter']['username'], style: TextStyle(fontWeight:FontWeight.bold, fontSize: 16.0), textAlign: TextAlign.left,),
+              ),
+              Text(widget.comment['comment_text'].toString(), style: TextStyle(fontSize: 16.0),),
+              Container(
+                margin: EdgeInsets.all(5.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Container(
+                      child: Row(
+                        children: <Widget> [
+                          GestureDetector(
+                            child: Icon(Icons.thumb_up, color: (_upvoted?Colors.blue:Colors.grey)),
+                            onTap: () {
+                              if(!_upvoted && !_downvoted){
+                                dynamic res = voteComment(2, comment['id']);
+                                res.then((data){
+                                  if(data){
+                                    print("in");
+                                    _pressUpvote();
+                                  }
+                                });
+                              }else if(_upvoted && !_downvoted){
+                                dynamic res = removevoteComment(1, comment['id']);
+                                res.then((data){
+                                  if(data){
+                                  _pressUpvote();
+                                  }
+                                });
+                              }
+                            }
+                          ),
+                          Text(" "+upvoter.toString()),
+                          Text("  "),
+                          GestureDetector(
+                            child: Icon(Icons.thumb_down, color: (_downvoted?Colors.blue:Colors.grey)),
+                            onTap: () {
+                              if(!_upvoted && !_downvoted){
+                                dynamic res = voteComment(3, comment['id']);
+                                res.then((data){
+                                  if(data){
+                                  _pressDownvote();
+                                  }
+                                });
+                              }else if(!_upvoted && _downvoted){
+                                dynamic res = removevoteComment(2, comment['id']);
+                                res.then((data){
+                                  if(data){
+                                  _pressDownvote();
+                                  }
+                                });
+                              }
+                            }
+                          ),
+                          Text(" "+downvoter.toString()),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      child: GestureDetector(
+                        child: Row(
+                          children: <Widget> [
+                            Icon(Icons.replay, color: Colors.grey,),
+                            Text("reply", style: TextStyle(fontWeight:FontWeight.bold),),
+                          ],
+                        ),
+                        onTap: () {
+                          
+                        },
+                      )
+                    ),
+                  ]
+                )
+              )
+            ],
+          )
+        ),
+      ],
     );
   }
-  return allComments;
+  _pressUpvote() {
+    print("upvote");
+    this.setState((){
+      if(_upvoted){
+        _upvoted = false;
+        upvoter -= 1;
+      }else{
+        _upvoted = true;
+        upvoter += 1;
+        if(_downvoted){
+          _downvoted = false;
+          downvoter -= 1;
+        }
+      }
+    });
+    print(_upvoted);
+  }
+
+  _pressDownvote() {
+    this.setState(() {
+      if(_downvoted){
+        _downvoted = false;
+        downvoter -= 1;
+      }else{
+        if(_upvoted){
+          _upvoted = false;
+          upvoter -= 1;
+        }
+        _downvoted = true;
+        downvoter += 1;
+      }
+    });
+  }
+}
+
+List<Widget> listOfComments(comments) {
+  List<Widget> commentList = List();
+  for (dynamic comment in comments) {
+    commentList.add(
+      OneComment(comment: comment)
+    );
+  }
+  return commentList;
 }
 
 class _CommentState extends State<Comment> {
@@ -269,7 +290,6 @@ class _CommentState extends State<Comment> {
   final commentTextController = TextEditingController();
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: Text("Comments"),
@@ -281,12 +301,13 @@ class _CommentState extends State<Comment> {
           future: allParentComments(widget.type, widget.id),
           builder: (context, snapshot) {
             if(snapshot.hasData){
+              dynamic comments = listOfComments(snapshot.data['comments']);
               return SingleChildScrollView(
                 child: Column(
                   children: <Widget>[
                     SingleChildScrollView(
                       child: Column(
-                        children: listOfComments(snapshot.data, screenWidth),
+                        children: comments,
                       ),
                     ),
                     Container(
@@ -309,8 +330,16 @@ class _CommentState extends State<Comment> {
                           trailing: Icon(Icons.send,
                           color: Colors.blue,),
                           onTap: () {
+                            FocusScope.of(context).requestFocus(FocusNode());
                             dynamic response = postComment(snapshot.data['id'].toString(), commentTextController.text);
-                            // Navigator.of(context).pushNamedAndRemoveUntil('/announcement', (Route<dynamic> route) => false);
+                            commentTextController.clear();
+                            response.then((data){
+                              setState((){
+                                comments.add(
+                                  OneComment(comment: data)
+                                );
+                              });
+                            });
                           },
                         )
                       )

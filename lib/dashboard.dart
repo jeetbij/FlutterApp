@@ -18,7 +18,7 @@ class Dashboard extends StatefulWidget {
 
 Future<bool> _logout() async {
   final SharedPreferences sp = await SharedPreferences.getInstance();
-  sp.setString('login_token', '');
+  sp.clear();
   return true;
 }
 
@@ -52,7 +52,6 @@ Widget classroomdetails(screenWidth) {
                   );
               },
               child: Container(
-               height: 300.0,
                 child: Card(
                   child: Column(
                     children: <Widget>[
@@ -70,7 +69,7 @@ Widget classroomdetails(screenWidth) {
                         child: Text(classroom['description'], textAlign: TextAlign.left, style: TextStyle(fontSize: 16.0),),
                       ),
                       Container(
-                        padding: EdgeInsets.only(left:5.0, right: 5.0, top: 5.0),
+                        padding: EdgeInsets.only(left:5.0, right: 5.0, top: 5.0, bottom: 15.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[

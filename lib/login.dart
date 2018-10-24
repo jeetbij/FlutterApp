@@ -14,8 +14,12 @@ Future<Map> fetchData(username, password) async {
   };
   final url = (globals.mainUrl).toString()+'/api-token-auth/';
   dynamic response = await http.post(url, body: data);
-  Map res = json.decode(response.body);
-  return res;
+  if(response.statusCode == 200){
+    Map res = json.decode(response.body);
+    return res;
+  }else{
+    return {"error":"failed to load data"};
+  }
 }
 
 class Login extends StatefulWidget {
@@ -93,7 +97,6 @@ class _LoginState extends State<Login> {
                                     sp.setString('login_token', data['token'].toString());
                                     sp.setString('username', usernameController.text);
                                   });
-                                  print(data['token']);
                                   if(data['token'] != null) {
                                     Navigator.push(
                                       context,
