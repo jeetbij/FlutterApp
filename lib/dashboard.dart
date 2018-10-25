@@ -151,7 +151,7 @@ class _DashboardState extends State<Dashboard> {
                     Container(
                       margin: EdgeInsets.only(left: 15.0),
                       child: GestureDetector(
-                        child: Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                        child: Text('Aphlabet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                         onTap: () {
                           Navigator.of(context).pop();
                         },
