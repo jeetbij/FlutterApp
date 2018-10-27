@@ -56,7 +56,7 @@ class _MainDrawerState extends State<MainDrawer> {
                   Container(
                     margin: EdgeInsets.only(left: 15.0),
                     child: GestureDetector(
-                      child: Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                      child: Text('Aphlabet', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                       onTap: () {
                         Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (Route<dynamic> route) => false);
                       },
@@ -66,6 +66,16 @@ class _MainDrawerState extends State<MainDrawer> {
               ),
               padding: EdgeInsets.all(10.0)
             ),
+          ),
+          ListTile(
+            leading: Icon(Icons.alarm),
+            title: Text('Home'),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.push(context,
+                MaterialPageRoute(builder: (context) => Classroom(classroomId: widget.classroomId)),
+              );
+            },
           ),
           ListTile(
             leading: Icon(Icons.alarm),
