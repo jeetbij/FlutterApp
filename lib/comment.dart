@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:http_client/console.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'globals.dart' as globals;
@@ -19,6 +18,8 @@ Future<dynamic> allParentComments(type, id) async {
   String url = '';
   if(type == 'announcement'){
     url = (globals.mainUrl).toString()+'/announcement/comment/?id='+(id).toString();
+  }else if(type == 'resource'){
+    url = (globals.mainUrl).toString()+'/resources/comment/?resource_id='+(id).toString();
   }
   final SharedPreferences sp  = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
@@ -71,21 +72,12 @@ Future voteComment(type, commentId) async {
 }
 
 Future removevoteComment(type, commentId) async {
-  Map<String, dynamic> data = {
-    'type': type,
-    'comment_id': commentId,
-  };
-  final client = ConsoleClient();
-  String jsonString = json.encode(data);
-  final url = (globals.mainUrl).toString()+'/comment/';
+  final url = (globals.mainUrl).toString()+'/comment/?comment_id='+commentId.toString()+'&type='+type.toString();
   final SharedPreferences sp  = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
-  // { headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString}
-  dynamic rs = await client.send(Request('DELETE', url, headers: {"Authorization": "JWT "+token.toString(), "Content-Type": "application/json"}, body: jsonString, encoding: Encoding.getByName("utf-8")));
-  final response = await rs.readAsString();
+  dynamic response = await http.delete(url, headers: {"Authorization": "JWT "+token.toString()});
   print(response);
-  print(rs.statusCode);
-  if(rs.statusCode == 200){
+  if(response.statusCode == 200){
     return true;
   }else{
     return false;
@@ -178,7 +170,6 @@ class _OneCommentState extends State<OneComment> {
                                 dynamic res = voteComment(2, comment['id']);
                                 res.then((data){
                                   if(data){
-                                    print("in");
                                     _pressUpvote();
                                   }
                                 });
@@ -241,7 +232,6 @@ class _OneCommentState extends State<OneComment> {
     );
   }
   _pressUpvote() {
-    print("upvote");
     this.setState((){
       if(_upvoted){
         _upvoted = false;

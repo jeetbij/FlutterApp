@@ -18,6 +18,7 @@ Future checkToken() async {
   final SharedPreferences sp = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
   String userName = sp.getString('username');
+  // sp.clear();
   if (userName != null && token != null){
     final url = (globals.mainUrl).toString()+"/userauth/user/?username="+userName.toString();
     dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});

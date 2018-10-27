@@ -31,7 +31,7 @@ Future<dynamic> fetchClassroom() async {
     dynamic responseJson = json.decode(response.body);
     return responseJson;
   }else{
-    throw Exception('Failed to load data');
+    throw Exception(response.body);
   }
 }
 
@@ -245,6 +245,7 @@ class _JoinClassroomState extends State<JoinClassroom> {
       duration: Duration(milliseconds: 300),
       child: SimpleDialog(
         contentPadding: EdgeInsets.all(15.0),
+        title: Text("Join Classroom"),
         children: <Widget>[
           Container(
             padding: EdgeInsets.all(5.0),
@@ -255,7 +256,7 @@ class _JoinClassroomState extends State<JoinClassroom> {
                   TextFormField(
                     controller: classroomCodeController,
                     decoration: InputDecoration(
-                      hintText: 'Ex. 01234',
+                      hintText: 'Class-0123',
                       labelText: 'Classroom Code',
                     ),
                     validator: (value) {

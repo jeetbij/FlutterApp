@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import './dashboard.dart';
 import './assignment.dart';
 import './lecture.dart';
 import './announcement.dart';
@@ -13,17 +12,12 @@ class Classroom extends StatefulWidget {
  _ClassroomState createState() => _ClassroomState();
 }
 
-Future<dynamic> fetchAnnouncment() async {
-  
-}
-
 class MainDrawer extends StatefulWidget {
   final String classroomId;
   MainDrawer({Key key, this.classroomId}) : super(key: key);
   @override
   _MainDrawerState createState() => _MainDrawerState();
 }
-
 
 class _ClassroomState extends State<Classroom> {
   @override
@@ -42,8 +36,6 @@ class _ClassroomState extends State<Classroom> {
     );
   }
 }
-
-
 
 class _MainDrawerState extends State<MainDrawer> {
   @override
@@ -66,9 +58,7 @@ class _MainDrawerState extends State<MainDrawer> {
                     child: GestureDetector(
                       child: Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
                       onTap: () {
-                        Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => Dashboard()),
-                        );
+                        Navigator.of(context).pushNamedAndRemoveUntil('/dashboard', (Route<dynamic> route) => false);
                       },
                     ),
                   ),
@@ -77,15 +67,6 @@ class _MainDrawerState extends State<MainDrawer> {
               padding: EdgeInsets.all(10.0)
             ),
           ),
-          // ListTile(
-          //   leading: Icon(Icons.account_circle),
-          //   title: Text('My Profile'),
-          //   onTap: () {
-          //     Navigator.push(context,
-          //       MaterialPageRoute(builder: (context) => MyProfile()),
-          //       );
-          //   },
-          // ),
           ListTile(
             leading: Icon(Icons.alarm),
             title: Text('Announcements'),
@@ -140,13 +121,6 @@ class _MainDrawerState extends State<MainDrawer> {
               );
             },
           ),
-          // ListTile(
-          //   leading: Icon(Icons.assignment_turned_in),
-          //   title: Text('Submissions'),
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //   },
-          // ),
           Divider(),
           ListTile(
             leading: Icon(Icons.power_settings_new),
