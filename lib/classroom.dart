@@ -1,3 +1,4 @@
+import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 
 import './assignment.dart';
@@ -17,24 +18,6 @@ class MainDrawer extends StatefulWidget {
   MainDrawer({Key key, this.classroomId}) : super(key: key);
   @override
   _MainDrawerState createState() => _MainDrawerState();
-}
-
-class _ClassroomState extends State<Classroom> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Classroom"),
-        backgroundColor: Color(0xFF42A5F5),
-      ),
-      drawer: MainDrawer(classroomId: widget.classroomId),
-      body: SingleChildScrollView(
-        child: Container(
-          child: Text('Classroom Id : ' +"${widget.classroomId}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
-        ),
-      ),
-    );
-  }
 }
 
 class _MainDrawerState extends State<MainDrawer> {
@@ -140,6 +123,116 @@ class _MainDrawerState extends State<MainDrawer> {
             },
           ), 
         ],
+      ),
+    );
+  }
+}
+
+
+class _ClassroomState extends State<Classroom> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Classroom"),
+        backgroundColor: Color(0xFF42A5F5),
+      ),
+      drawer: MainDrawer(classroomId: widget.classroomId),
+      body: SingleChildScrollView(
+        child: Container(
+          child: Column(
+            children:<Widget> [
+              Center(
+                child: DropdownButton(
+                  items: <DropdownMenuItem>[
+                    DropdownMenuItem(
+                      child: Text('Assignment 1'),
+                      value: "Assignment 1"
+                    ),
+                    DropdownMenuItem(
+                      child: Text('Assignment 2'),
+                      value: "Assignment 2"
+                    ),
+                    DropdownMenuItem(
+                      child: Text('Assignment 3'),
+                      value: "Assignment 3"
+                    ),
+                    DropdownMenuItem(
+                      child: Text('Assignment 4'),
+                      value: "Assignment 4"
+                    ),
+                  ],
+                  hint: Text("Select Assignment"),
+                  onChanged: (value) {
+                    print(value);
+                  },
+                ),
+              ),
+              MakeChart(),
+              Center(
+                child: DropdownButton(
+                  items: <DropdownMenuItem>[
+                    DropdownMenuItem(
+                      child: Text('Poll 1'),
+                      value: "Poll 1"
+                    ),
+                    DropdownMenuItem(
+                      child: Text('Poll 2'),
+                      value: "Poll 2"
+                    ),
+                    DropdownMenuItem(
+                      child: Text('Poll 3'),
+                      value: "Poll 3"
+                    ),
+                    DropdownMenuItem(
+                      child: Text('Poll 4'),
+                      value: "Poll 4"
+                    ),
+                  ],
+                  hint: Text("Select Poll"),
+                  onChanged: (value) {
+                    print(value);
+                  },
+                ),
+              ),
+              MakeChart()
+            ]
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OrdinalSales {
+  final String year;
+  final int sales;
+
+  OrdinalSales(this.year, this.sales);
+}
+
+class MakeChart extends StatefulWidget {
+  @override
+  _MakeChartState createState() => _MakeChartState();
+}
+
+class _MakeChartState extends State<MakeChart>{
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(32.0),
+      child: SizedBox(
+        height: 300.0,
+        child: charts.BarChart(
+          [charts.Series<OrdinalSales, String>(
+            id: 'Assignment',
+            domainFn: (OrdinalSales sales, _) => sales.year,
+            measureFn:(OrdinalSales sales, _) => sales.sales,
+            data: [OrdinalSales('2014', 5), OrdinalSales('2015', 25), OrdinalSales('2016', 200), OrdinalSales('2017', 45)],
+          )],
+          animate: true,
+          vertical: false,
+        ),
       ),
     );
   }
