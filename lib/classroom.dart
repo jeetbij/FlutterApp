@@ -5,6 +5,7 @@ import './assignment.dart';
 import './lecture.dart';
 import './announcement.dart';
 import './resources.dart';
+import './polls.dart';
 
 class Classroom extends StatefulWidget {
   final String classroomId;
@@ -95,6 +96,9 @@ class _MainDrawerState extends State<MainDrawer> {
             title: Text('Polls'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(context,
+                MaterialPageRoute(builder: (context) => Poll(classroomId: widget.classroomId)),
+              );
             },
           ),
           ListTile(
