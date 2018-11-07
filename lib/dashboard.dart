@@ -47,6 +47,7 @@ Widget classroomdetails(screenWidth) {
           classrooms.add(
             GestureDetector(
               onTap: () {
+                globals.classroomId = classroom['id'].toString();
                 Navigator.push(context,
                   MaterialPageRoute(builder: (context) => Classroom(classroomId: classroom['id'].toString())),
                   );

@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
 
 import 'globals.dart' as globals;
 import 'classroom.dart';
@@ -32,6 +34,23 @@ Future getAllResource(classroomId) async {
   }else{
     throw Exception('Failed to load data');
   }
+}
+
+Future uploadResource(classroomId, description, filePath, fileName) async {
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  final token = sp.getString('login_token');
+  final url = Uri.parse((globals.mainUrl).toString()+'/resources/');
+
+  var request = http.MultipartRequest("POST", url);
+  request.headers.addAll({"Authorization": "JWT "+token.toString()});
+  request.fields['classroom_id'] = classroomId;
+  request.fields['description'] = description;
+  request.fields['is_lecture'] = "False";
+  request.files.add(await http.MultipartFile.fromPath('attachment', filePath, filename: fileName));
+  dynamic response = await request.send();
+  print(response.statusCode);
+  print(response.stream);
+
 }
 
 List<Widget> listofresource(resources, screenWidth, buttonPosition) {
@@ -88,6 +107,23 @@ class _UploadResourceState extends State<UploadResource> {
   final attachmentController = TextEditingController();
   final descriptionController = TextEditingController();
 
+  String _path = '...';
+  String _fileName = '...';
+  
+  void _openFileExplorer() async {
+    try {
+      _path = await FilePicker.getFilePath(type: FileType.PDF);
+    } on PlatformException catch (e) {
+      print(e.toString());
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _fileName = _path != null ? _path.split('/').last : '...';
+      attachmentController.text = _fileName;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
@@ -102,23 +138,36 @@ class _UploadResourceState extends State<UploadResource> {
               key: _formKey,
               child: Column(
                 children: <Widget>[
-                  TextFormField(
-                    controller: descriptionController,
-                    decoration: InputDecoration(
-                      labelText: 'Enter your text here..',
-                    ),
+                  Stack(
+                    alignment: Alignment(1.0, 0.0),
+                    children: <Widget>[
+                      TextFormField(
+                        enabled: false,
+                        controller: attachmentController,
+                        decoration: InputDecoration(
+                          hintText: 'Select file here..',
+                        ),
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return "Please select file.";
+                          }
+                        }
+                      ),
+                      Container(
+                        width: 60.0,
+                        child: RaisedButton(
+                          child: Text("File", style: TextStyle(color: Colors.blue),),
+                          onPressed: () => _openFileExplorer(),
+                        ),
+                      ),
+                    ],
                   ),
                   Text(""),
                   TextFormField(
-                    controller: attachmentController,
+                    controller: descriptionController,
                     decoration: InputDecoration(
-                      labelText: 'Upload your file here..',
+                      labelText: 'Description',
                     ),
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return "Please upload file.";
-                      }
-                    }
                   ),
                   Container(
                     margin: EdgeInsets.only(top: 20.0, left:200.0),
@@ -126,6 +175,7 @@ class _UploadResourceState extends State<UploadResource> {
                       child: Text('Upload'),
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
+                          uploadResource(globals.classroomId, descriptionController.text, _path, _fileName);
                           Navigator.pop(context);
                           print("success");
                         }

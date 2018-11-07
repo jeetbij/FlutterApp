@@ -65,7 +65,7 @@ class _MainDrawerState extends State<MainDrawer> {
             leading: Icon(Icons.alarm),
             title: Text('Announcements'),
             onTap: () {
-              Navigator.of(context).pop();
+              Navigator.of(context).popUntil(ModalRoute.withName('/classroom'));
               Navigator.push(context,
                 MaterialPageRoute(builder: (context) => Announcement(classroomId: widget.classroomId)),
               );

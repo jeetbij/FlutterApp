@@ -278,6 +278,13 @@ List<Widget> listOfComments(comments) {
 class _CommentState extends State<Comment> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final commentTextController = TextEditingController();
+  ScrollController _scrollController = ScrollController(initialScrollOffset: 500.0);
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -293,6 +300,7 @@ class _CommentState extends State<Comment> {
             if(snapshot.hasData){
               dynamic comments = listOfComments(snapshot.data['comments']);
               return SingleChildScrollView(
+                controller: _scrollController,
                 child: Column(
                   children: <Widget>[
                     SingleChildScrollView(
