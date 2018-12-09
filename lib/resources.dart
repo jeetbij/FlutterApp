@@ -19,7 +19,8 @@ class Resource extends StatefulWidget {
 }
 
 class UploadResource extends StatefulWidget {
-  UploadResource({Key key}) : super(key: key);
+  dynamic resources;
+  UploadResource({Key key, this.resources}) : super(key: key);
   @override
   _UploadResourceState createState() => _UploadResourceState();
 }
@@ -49,7 +50,9 @@ Future uploadResource(classroomId, description, filePath, fileName) async {
   request.files.add(await http.MultipartFile.fromPath('attachment', filePath, filename: fileName));
   dynamic response = await request.send();
   print(response.statusCode);
-  print(response.stream);
+  response.stream.transform(utf8.decoder).listen((value) {
+        print(value);
+      });
 
 }
 
@@ -80,9 +83,10 @@ List<Widget> listofresource(resources, screenWidth, buttonPosition) {
                         child: RaisedButton(
                           child: Text("Download", style: TextStyle(fontSize: 10.0)),
                           onPressed: (() async {
+                            print(resource['attachment']);
                             String url = (globals.mainUrl).toString()+resource['attachment'];
                             if (await canLaunch(url)) {
-                              await launch(url, forceSafariVC: true, forceWebView: true);
+                              await launch(url);
                             } else {
                               throw 'Could not launch $url';
                             }
@@ -119,6 +123,7 @@ class _UploadResourceState extends State<UploadResource> {
 
     if (!mounted) return;
     setState(() {
+      print(_path);
       _fileName = _path != null ? _path.split('/').last : '...';
       attachmentController.text = _fileName;
     });
@@ -175,8 +180,11 @@ class _UploadResourceState extends State<UploadResource> {
                       child: Text('Upload'),
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
-                          uploadResource(globals.classroomId, descriptionController.text, _path, _fileName);
+                          dynamic response = uploadResource(globals.classroomId, descriptionController.text, _path, _fileName);
                           Navigator.pop(context);
+                          setState(() {
+                            widget.resources.add(response);                       
+                          });
                           print("success");
                         }
                       },
@@ -197,6 +205,7 @@ class _ResourceState extends State<Resource> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double buttonPosition = screenWidth - 120.0;
+    dynamic resources;
     return Scaffold(
       appBar: AppBar(
         title: Text("Resources"),
@@ -208,8 +217,9 @@ class _ResourceState extends State<Resource> {
           future: getAllResource(widget.classroomId),
           builder: (context, snapshot) {
             if(snapshot.hasData){
+              resources = listofresource(snapshot.data, screenWidth, buttonPosition);
               return Column(
-                children: listofresource(snapshot.data, screenWidth, buttonPosition),
+                children: resources,
               );
             }else{
               return CircularProgressIndicator();
@@ -222,7 +232,7 @@ class _ResourceState extends State<Resource> {
         onPressed: () {
           showDialog(
             context: context,
-            builder: (_) => UploadResource(),
+            builder: (_) => UploadResource(resources: resources),
           );
         },
         child: Icon(Icons.attachment),

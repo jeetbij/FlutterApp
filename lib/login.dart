@@ -13,12 +13,17 @@ Future<Map> fetchData(username, password) async {
     'password': password
   };
   final url = (globals.mainUrl).toString()+'/api-token-auth/';
-  dynamic response = await http.post(url, body: data);
-  if(response.statusCode == 200){
-    Map res = json.decode(response.body);
-    return res;
-  }else{
-    return {"error":"failed to load data"};
+  try{
+    dynamic response = await http.post(url, body: data).timeout(Duration(seconds: 5));
+    if(response.statusCode == 200){
+      Map res = json.decode(response.body);
+      return res;
+    }else{
+      return {"error":"Invalid Credentials."};
+    }
+  }
+  on TimeoutException catch(_) {
+    return {"error":"Request timeout. Check your internet connection."};
   }
 }
 
@@ -91,6 +96,7 @@ class _LoginState extends State<Login> {
                             // color: Colors.blue,
                             onPressed: () {
                               if (_formKey.currentState.validate()) {
+                                FocusScope.of(context).requestFocus(FocusNode());
                                 dynamic response = fetchData(usernameController.text, passwordController.text);
                                 response.then((data) {
                                   SharedPreferences.getInstance().then((SharedPreferences sp) {
@@ -105,10 +111,9 @@ class _LoginState extends State<Login> {
                                       ),
                                     );
                                   }else{
-                                    FocusScope.of(context).requestFocus(FocusNode());
                                     usernameController.clear();
                                     passwordController.clear();
-                                    Scaffold.of(context).showSnackBar(SnackBar(content: Text("Invalid Credential.")));
+                                    Scaffold.of(context).showSnackBar(SnackBar(content: Text(data['error'])));
                                   }
                                 });
                               }

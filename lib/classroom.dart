@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:flutter/material.dart';
 
@@ -6,6 +8,10 @@ import './lecture.dart';
 import './announcement.dart';
 import './resources.dart';
 import './polls.dart';
+
+import 'package:http/http.dart' as http;
+import 'globals.dart' as globals;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Classroom extends StatefulWidget {
   final String classroomId;
@@ -19,6 +25,32 @@ class MainDrawer extends StatefulWidget {
   MainDrawer({Key key, this.classroomId}) : super(key: key);
   @override
   _MainDrawerState createState() => _MainDrawerState();
+}
+
+Future<dynamic> allPolls(classroomId) async{
+  final url = (globals.mainUrl).toString()+'/polls/?classroom_id='+classroomId.toString();
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
+  if (response.statusCode == 200){
+    dynamic responseJson = json.decode(response.body);
+    return responseJson;
+  }else{
+    throw Exception(response.body);
+  }
+}
+
+Future<dynamic> allAssignments(classroomId) async{
+  final url = (globals.mainUrl).toString()+'/assignment/?classroom_id='+classroomId.toString();
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
+  if (response.statusCode == 200){
+    dynamic responseJson = json.decode(response.body);
+    return responseJson;
+  }else{
+    throw Exception(response.body);
+  }
 }
 
 class _MainDrawerState extends State<MainDrawer> {
@@ -65,7 +97,7 @@ class _MainDrawerState extends State<MainDrawer> {
             leading: Icon(Icons.alarm),
             title: Text('Announcements'),
             onTap: () {
-              Navigator.of(context).popUntil(ModalRoute.withName('/classroom'));
+              Navigator.of(context).pop();
               Navigator.push(context,
                 MaterialPageRoute(builder: (context) => Announcement(classroomId: widget.classroomId)),
               );
@@ -132,9 +164,64 @@ class _MainDrawerState extends State<MainDrawer> {
   }
 }
 
+List<DropdownMenuItem> pollNames(data) {
+  List<DropdownMenuItem> pollList = List();
+  for(dynamic i=0; i<data.length; i++){
+   pollList.add(
+      DropdownMenuItem(
+        child: Text(data[i]['poll_text'].toString()),
+        value: data[i]['id'].toString()
+      )
+    );
+  }
+  return pollList;
+}
+
+List<DropdownMenuItem> assignmentNames(data) {
+  List<DropdownMenuItem> assignmentList = List();
+  for(dynamic i=0; i<data.length; i++){
+   assignmentList.add(
+      DropdownMenuItem(
+        child: Text(data[i]['title'].toString()),
+        value: data[i]['id'].toString()
+      )
+    );
+  }
+  return assignmentList;
+}
+
+Future<dynamic> getPollResponses(pollId) async{
+  final url = (globals.mainUrl).toString()+'/poll_response/?poll_id='+pollId.toString();
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
+  if (response.statusCode == 200){
+    dynamic responseJson = json.decode(response.body);
+    return responseJson;
+  }else{
+    throw Exception(response.body);
+  }
+}
+
+Future<dynamic> getAssignmentMarks(assignmentId) async{
+  final url = (globals.mainUrl).toString()+'/assignment/submission/?assignment_id='+assignmentId.toString();
+  final SharedPreferences sp = await SharedPreferences.getInstance();
+  String token = sp.getString('login_token');
+  dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
+  if (response.statusCode == 200){
+    dynamic responseJson = json.decode(response.body);
+    return responseJson;
+  }else{
+    throw Exception(response.body);
+  }
+}
+
 
 class _ClassroomState extends State<Classroom> {
   @override
+  String hintText = "Select Poll";
+  List<OrdinalSales> pollDataList = [OrdinalSales('100', 0), OrdinalSales('75', 0), OrdinalSales('25', 0), OrdinalSales('0', 0)];
+  List<OrdinalSales> assignmentDataList = [OrdinalSales('100', 0), OrdinalSales('75', 0), OrdinalSales('25', 0), OrdinalSales('0', 0)];
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -147,59 +234,57 @@ class _ClassroomState extends State<Classroom> {
           child: Column(
             children:<Widget> [
               Center(
-                child: DropdownButton(
-                  items: <DropdownMenuItem>[
-                    DropdownMenuItem(
-                      child: Text('Assignment 1'),
-                      value: "Assignment 1"
-                    ),
-                    DropdownMenuItem(
-                      child: Text('Assignment 2'),
-                      value: "Assignment 2"
-                    ),
-                    DropdownMenuItem(
-                      child: Text('Assignment 3'),
-                      value: "Assignment 3"
-                    ),
-                    DropdownMenuItem(
-                      child: Text('Assignment 4'),
-                      value: "Assignment 4"
-                    ),
-                  ],
-                  hint: Text("Select Assignment"),
-                  onChanged: (value) {
-                    print(value);
+                child: FutureBuilder(
+                  future: allPolls(widget.classroomId),
+                  builder: (context, snapshot) {
+                    if(snapshot.hasData){
+                      return DropdownButton(
+                        items: pollNames(snapshot.data),
+                        hint: Text(hintText),
+                        onChanged: (value) {
+                          getPollResponses(value).then((data) {
+                            setState(() {
+                              hintText = value;
+                              pollDataList = [OrdinalSales('100', int.parse(value)*2), OrdinalSales('75', int.parse(value)*9), OrdinalSales('25', int.parse(value)*6), OrdinalSales('0', int.parse(value)*7)];                          
+                            });
+                          });
+                        },
+                      );
+                    }else{
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
                   },
-                ),
+                )
               ),
-              MakeChart(),
+              MakeChart(dataList: pollDataList),
               Center(
-                child: DropdownButton(
-                  items: <DropdownMenuItem>[
-                    DropdownMenuItem(
-                      child: Text('Poll 1'),
-                      value: "Poll 1"
-                    ),
-                    DropdownMenuItem(
-                      child: Text('Poll 2'),
-                      value: "Poll 2"
-                    ),
-                    DropdownMenuItem(
-                      child: Text('Poll 3'),
-                      value: "Poll 3"
-                    ),
-                    DropdownMenuItem(
-                      child: Text('Poll 4'),
-                      value: "Poll 4"
-                    ),
-                  ],
-                  hint: Text("Select Poll"),
-                  onChanged: (value) {
-                    print(value);
+                child: FutureBuilder(
+                  future: allAssignments(widget.classroomId),
+                  builder: (context, snapshot) {
+                    if(snapshot.hasData){
+                      return DropdownButton(
+                        items: assignmentNames(snapshot.data),
+                        hint: Text(hintText),
+                        onChanged: (value) {
+                          getAssignmentMarks(value).then((data) {
+                            setState(() {
+                              hintText = value;
+                              assignmentDataList = [OrdinalSales('100', int.parse(value)*2), OrdinalSales('75', int.parse(value)*9), OrdinalSales('25', int.parse(value)*6), OrdinalSales('0', int.parse(value)*7)];                          
+                            });
+                          });
+                        },
+                      );
+                    }else{
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
                   },
-                ),
+                )
               ),
-              MakeChart()
+              MakeChart(dataList: assignmentDataList)
             ]
           ),
         ),
@@ -216,6 +301,8 @@ class OrdinalSales {
 }
 
 class MakeChart extends StatefulWidget {
+  List<OrdinalSales> dataList;
+  MakeChart({Key key, this.dataList}) : super(key: key);
   @override
   _MakeChartState createState() => _MakeChartState();
 }
@@ -232,7 +319,7 @@ class _MakeChartState extends State<MakeChart>{
             id: 'Assignment',
             domainFn: (OrdinalSales sales, _) => sales.year,
             measureFn:(OrdinalSales sales, _) => sales.sales,
-            data: [OrdinalSales('2014', 5), OrdinalSales('2015', 25), OrdinalSales('2016', 200), OrdinalSales('2017', 45)],
+            data: widget.dataList,
           )],
           animate: true,
           vertical: false,
