@@ -8,6 +8,7 @@ import './lecture.dart';
 import './announcement.dart';
 import './resources.dart';
 import './polls.dart';
+import './storages.dart';
 
 import 'package:http/http.dart' as http;
 import 'globals.dart' as globals;
@@ -138,6 +139,9 @@ class _MainDrawerState extends State<MainDrawer> {
             title: Text('Storage'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.push(context,
+                MaterialPageRoute(builder: (context) => Storage(classroomId: widget.classroomId)),
+              );
             },
           ),
           ListTile(

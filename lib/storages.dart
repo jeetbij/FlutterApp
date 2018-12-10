@@ -11,24 +11,24 @@ import 'package:file_picker/file_picker.dart';
 import 'globals.dart' as globals;
 import 'classroom.dart';
 
-class Resource extends StatefulWidget {
+class Storage extends StatefulWidget {
   final String classroomId;
-  Resource({Key key, this.classroomId}) : super(key: key);
+  Storage({Key key, this.classroomId}) : super(key: key);
   @override
-  _ResourceState createState() => _ResourceState();
+  _StorageState createState() => _StorageState();
 }
 
-class UploadResource extends StatefulWidget {
-  dynamic resources;
-  UploadResource({Key key, this.resources}) : super(key: key);
+class UploadStorage extends StatefulWidget {
+  dynamic storages;
+  UploadStorage({Key key, this.storages}) : super(key: key);
   @override
-  _UploadResourceState createState() => _UploadResourceState();
+  _UploadStorageState createState() => _UploadStorageState();
 }
 
-Future getAllResource(classroomId) async {
+Future getAllStorage(classroomId) async {
   final SharedPreferences sp = await SharedPreferences.getInstance();
   final token = sp.getString('login_token');
-  final url = (globals.mainUrl).toString() + '/resources/?classroom_id='+classroomId.toString()+'&type=resource';
+  final url = (globals.mainUrl).toString() + '/storage/';
   dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
   if(response.statusCode == 200){
     return json.decode(response.body);
@@ -37,17 +37,14 @@ Future getAllResource(classroomId) async {
   }
 }
 
-Future uploadResource(classroomId, description, filePath, fileName) async {
+Future uploadStorage(filePath, fileName) async {
   final SharedPreferences sp = await SharedPreferences.getInstance();
   final token = sp.getString('login_token');
-  final url = Uri.parse((globals.mainUrl).toString()+'/resources/');
+  final url = Uri.parse((globals.mainUrl).toString()+'/storage/uploaddocument/');
 
   var request = http.MultipartRequest("POST", url);
   request.headers.addAll({"Authorization": "JWT "+token.toString()});
-  request.fields['classroom_id'] = classroomId;
-  request.fields['description'] = description;
-  request.fields['is_lecture'] = "False";
-  request.files.add(await http.MultipartFile.fromPath('attachment', filePath, filename: fileName));
+  request.files.add(await http.MultipartFile.fromPath('document', filePath, filename: fileName));
   dynamic response = await request.send();
   print(response.statusCode);
   response.stream.transform(utf8.decoder).listen((value) {
@@ -56,61 +53,62 @@ Future uploadResource(classroomId, description, filePath, fileName) async {
 
 }
 
-List<Widget> listofresource(resources, screenWidth, buttonPosition) {
-  List<Widget> resourcesWidget = List();
-  for(dynamic resource in resources){
-    resourcesWidget.add(
-      Card(
-        child: SizedBox(
-          width: screenWidth,
-          height: 80.0,
-          child: Container(
-            padding: const EdgeInsets.only(top:15.0, right:10.0, left:10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget> [
-                Text(resource['description'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),      
-                Container(
-                  padding: EdgeInsets.only(top: 10.0),
-                  // margin: EdgeInsets.only(right:40.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text("Uploaded On: "+DateFormat.yMMMMd("en_US").format(DateTime.parse(resource['uploaded_on'].toString())), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10.0)),
-                      SizedBox(
-                        width: 80.0,
-                        height: 20.0,
-                        child: RaisedButton(
-                          child: Text("Download", style: TextStyle(fontSize: 10.0)),
-                          onPressed: (() async {
-                            print(resource['attachment']);
-                            String url = (globals.mainUrl).toString()+resource['attachment'];
-                            if (await canLaunch(url)) {
-                              await launch(url);
-                            } else {
-                              throw 'Could not launch $url';
-                            }
-                          }),
+List<Widget> listofstorage(storages, screenWidth, buttonPosition) {
+  List<Widget> storagesWidget = List();
+  if (storages.length > 0){
+    for(dynamic storage in storages){
+      storagesWidget.add(
+        Card(
+          child: SizedBox(
+            width: screenWidth,
+            height: 80.0,
+            child: Container(
+              padding: const EdgeInsets.only(top:15.0, right:10.0, left:10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget> [
+                  Text(storage['fileName'].toString(), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15.0)),      
+                  Container(
+                    padding: EdgeInsets.only(top: 10.0),
+                    // margin: EdgeInsets.only(right:40.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Text("Uploaded On: "+DateFormat.yMMMMd("en_US").format(DateTime.parse(storage['uploaded_on'].toString())), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10.0)),
+                        SizedBox(
+                          width: 80.0,
+                          height: 20.0,
+                          child: RaisedButton(
+                            child: Text("Download", style: TextStyle(fontSize: 10.0)),
+                            onPressed: (() async {
+                              print(storage['document']);
+                              String url = (globals.mainUrl).toString()+storage['document'];
+                              if (await canLaunch(url)) {
+                                await launch(url);
+                              } else {
+                                throw 'Could not launch $url';
+                              }
+                            }),
+                          ),
                         ),
-                      ),
-                    ],
-                  )
-                ),
-              ],
+                      ],
+                    )
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
-  return resourcesWidget;
+  return storagesWidget;
 }
 
-class _UploadResourceState extends State<UploadResource> {
+class _UploadStorageState extends State<UploadStorage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final attachmentController = TextEditingController();
-  final descriptionController = TextEditingController();
-
+  
   String _path = '...';
   String _fileName = '...';
   
@@ -135,7 +133,7 @@ class _UploadResourceState extends State<UploadResource> {
       duration: Duration(milliseconds: 300),
       child: SimpleDialog(
         contentPadding: EdgeInsets.all(15.0),
-        title: Text("Upload Resource"),
+        title: Text("Upload Document"),
         children: <Widget>[
           Container(
             padding: EdgeInsets.all(5.0),
@@ -168,22 +166,17 @@ class _UploadResourceState extends State<UploadResource> {
                     ],
                   ),
                   Text(""),
-                  TextFormField(
-                    controller: descriptionController,
-                    decoration: InputDecoration(
-                      labelText: 'Description',
-                    ),
-                  ),
                   Container(
                     margin: EdgeInsets.only(top: 20.0, left:200.0),
                     child: RaisedButton(
                       child: Text('Upload'),
                       onPressed: () {
                         if (_formKey.currentState.validate()) {
-                          dynamic response = uploadResource(globals.classroomId, descriptionController.text, _path, _fileName);
+                          dynamic response = uploadStorage(_path, _fileName);
+                          print(response);
                           Navigator.pop(context);
                           setState(() {
-                            widget.resources.add(response);                       
+                            widget.storages.add(response);                       
                           });
                           print("success");
                         }
@@ -200,26 +193,27 @@ class _UploadResourceState extends State<UploadResource> {
   }
 }
 
-class _ResourceState extends State<Resource> {
+class _StorageState extends State<Storage> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double buttonPosition = screenWidth - 120.0;
-    dynamic resources;
+    dynamic storages;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Resources"),
+        title: Text("Storage"),
         backgroundColor: Color(0xFF42A5F5),
       ),
       drawer: MainDrawer(classroomId: widget.classroomId),
       body: SingleChildScrollView(
         child: FutureBuilder(
-          future: getAllResource(widget.classroomId),
+          future: getAllStorage(widget.classroomId),
           builder: (context, snapshot) {
+            print(snapshot);
             if(snapshot.hasData){
-              resources = listofresource(snapshot.data, screenWidth, buttonPosition);
+              storages = listofstorage(snapshot.data['documents'], screenWidth, buttonPosition);
               return Column(
-                children: resources,
+                children: storages,
               );
             }else{
               return CircularProgressIndicator();
@@ -228,11 +222,11 @@ class _ResourceState extends State<Resource> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: "Add Resource",
+        tooltip: "Add Storage",
         onPressed: () {
           showDialog(
             context: context,
-            builder: (_) => UploadResource(resources: resources),
+            builder: (_) => UploadStorage(storages: storages),
           );
         },
         child: Icon(Icons.attachment),
