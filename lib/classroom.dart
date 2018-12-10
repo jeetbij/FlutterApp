@@ -191,12 +191,13 @@ List<DropdownMenuItem> assignmentNames(data) {
 }
 
 Future<dynamic> getPollResponses(pollId) async{
-  final url = (globals.mainUrl).toString()+'/poll_response/?poll_id='+pollId.toString();
+  final url = (globals.mainUrl).toString()+'/polls/polldetail/?poll_id='+pollId.toString();
   final SharedPreferences sp = await SharedPreferences.getInstance();
   String token = sp.getString('login_token');
   dynamic response = await http.get(url, headers: {"Authorization": "JWT "+token.toString()});
   if (response.statusCode == 200){
     dynamic responseJson = json.decode(response.body);
+    print(responseJson);
     return responseJson;
   }else{
     throw Exception(response.body);
@@ -216,10 +217,38 @@ Future<dynamic> getAssignmentMarks(assignmentId) async{
   }
 }
 
+List<OrdinalSales> assignMarks(marks) {
+  List<OrdinalSales> marksList = List();
+  if(marks.length > 0){
+    dynamic avg=0;
+    dynamic mid = marks[marks.length~/2]['score'];
+    dynamic high = marks[marks.length-1]['score'];
+    for(int i=0;i<marks.length;i++){
+      avg+=marks[i]['score'];
+    }
+    avg = avg~/marks.length;
+    if(avg>=0 && mid>=0 && high>=0){
+      marksList.add(OrdinalSales('Average', avg));
+      marksList.add(OrdinalSales('Median', mid));
+      marksList.add(OrdinalSales('Highest', high));
+    }
+    return marksList;
+  }else{
+    return marksList;
+  }
+}
+
+List<OrdinalSales> pollRes(res){
+  List<OrdinalSales> resList = List();
+  for(int i=0;i<res.length;i++){
+    resList.add(OrdinalSales(res[i]['name'], res[i]['count']));
+  }
+  return resList;
+}
 
 class _ClassroomState extends State<Classroom> {
   @override
-  String hintText = "Select Poll";
+  String hintText = "Select";
   List<OrdinalSales> pollDataList = [OrdinalSales('100', 0), OrdinalSales('75', 0), OrdinalSales('25', 0), OrdinalSales('0', 0)];
   List<OrdinalSales> assignmentDataList = [OrdinalSales('100', 0), OrdinalSales('75', 0), OrdinalSales('25', 0), OrdinalSales('0', 0)];
   Widget build(BuildContext context) {
@@ -245,7 +274,7 @@ class _ClassroomState extends State<Classroom> {
                           getPollResponses(value).then((data) {
                             setState(() {
                               hintText = value;
-                              pollDataList = [OrdinalSales('100', int.parse(value)*2), OrdinalSales('75', int.parse(value)*9), OrdinalSales('25', int.parse(value)*6), OrdinalSales('0', int.parse(value)*7)];                          
+                              pollDataList = pollRes(data);                          
                             });
                           });
                         },
@@ -271,7 +300,7 @@ class _ClassroomState extends State<Classroom> {
                           getAssignmentMarks(value).then((data) {
                             setState(() {
                               hintText = value;
-                              assignmentDataList = [OrdinalSales('100', int.parse(value)*2), OrdinalSales('75', int.parse(value)*9), OrdinalSales('25', int.parse(value)*6), OrdinalSales('0', int.parse(value)*7)];                          
+                              assignmentDataList = assignMarks(data);                          
                             });
                           });
                         },

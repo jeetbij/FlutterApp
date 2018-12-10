@@ -213,8 +213,8 @@ class _OneCommentState extends State<OneComment> {
                       child: GestureDetector(
                         child: Row(
                           children: <Widget> [
-                            Icon(Icons.replay, color: Colors.grey,),
-                            Text("reply", style: TextStyle(fontWeight:FontWeight.bold),),
+                            // Icon(Icons.replay, color: Colors.grey,),
+                            // Text("reply", style: TextStyle(fontWeight:FontWeight.bold),),
                           ],
                         ),
                         onTap: () {
